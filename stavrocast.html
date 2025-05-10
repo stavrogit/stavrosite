@@ -1,0 +1,79 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Stavrocast - Weather Forecasts</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+	</head>
+	<body class="no-sidebar is-preload">
+		<div id="page-wrapper">
+
+			<section id="header" style="padding-top: 1em; padding-bottom: 1em; min-height: 0;"> 
+				<div class="container" style="padding-top: 1em; padding-bottom: 0em; border-bottom: none; box-shadow: none;"> 
+					<h1 id="logo" style="margin-bottom: 0.25em;"><a href="stavrocast.html">STAVROCAST</a></h1>
+					<p style="margin-top: 0; font-size: 0.9em;">GEFS Ensemble Forecast Uncertainty Analysis</p>
+
+				</div>
+			</section>
+
+			<section id="main" style="padding-top: 2em; padding-bottom: 2em;"> <div class="container">
+					<div id="content">
+
+						<article class="box post" style="border-top: none; box-shadow: none; margin-top:0; padding-top:0;">
+
+							<div class="row">
+								<div class="col-12">
+
+									<div class="row gtr-uniform">
+										<div class="col-12">
+											<label for="stateInput" style="display: block; margin-bottom: 0.5em; text-align: center; font-weight: bold;">Enter State Abbreviation:</label>
+											<input type="text" name="stateInput" id="stateInput" value="" placeholder="e.g., VA" style="max-width: 350px; margin: 0 auto 1.5em auto; display: block;" />
+										</div>
+									</div>
+
+									<div class="row gtr-uniform">
+										<div class="col-12">
+											<label for="airportSelect" style="display: block; margin-bottom: 0.5em; text-align: center; font-weight: bold;">Select Airport:</label>
+											<select name="airportSelect" id="airportSelect" style="max-width: 350px; margin: 0 auto 1.5em auto; display: block;">
+												<option value="">-- Select State First --</option>
+											</select>
+										</div>
+									</div>
+
+									<div class="row gtr-uniform">
+										<div class="col-12">
+											<ul class="actions" style="margin-top: 1em; text-align: center;">
+												<li><input type="button" id="getForecastButton" value="Get Forecast" class="button" style="min-width: 200px;" /></li>
+											</ul>
+										</div>
+									</div>
+
+								</div>
+							</div>
+
+							<div class="row gtr-uniform" style="margin-top: 2.5em;">
+								<div class="col-12">
+									<h3 style="text-align: center;">Forecast Plot</h3>
+									<span class="image fit" id="forecastImageContainer">
+										<img src="" id="forecastImage" alt="Forecast will appear here" style="display: none; border: 1px solid #ccc; margin: 0 auto;" />
+										<p id="imagePlaceholderText" style="text-align: center; padding: 2em; border: 1px dashed #ccc;">Forecast will appear here once an airport is selected and "Get Forecast" is clicked.</p>
+									</span>
+								</div>
+							</div>
+						</article>
+					</div>
+				</div>
+			</section>
+
+			</div>
+
+		<script src="assets/js/jquery.min.js"></script>
+		<script src="assets/js/jquery.dropotron.min.js"></script>
+		<script src="assets/js/browser.min.js"></script>
+		<script src="assets/js/breakpoints.min.js"></script>
+		<script src="assets/js/util.js"></script>
+		<script src="assets/js/main.js"></script>
+		<script src="assets/js/stavrocast-logic.js"></script> 
+	</body>
+</html>
