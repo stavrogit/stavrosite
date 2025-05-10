@@ -75,7 +75,7 @@ def get_latest_update_time():
 
 def construct_url(airport_code, update_time, file_type_suffix):
     """Constructs the download URL."""
-    file_name = f'GEFSK{airport_code.upper()}{update_time.strftime("%Y%m%d%H")}{file_type_suffix}.csv'
+    file_name = f'GEFS{airport_code.upper()}{update_time.strftime("%Y%m%d%H")}{file_type_suffix}.csv'
     return BASE_URL + file_name
 
 def load_csv_file(airport_code, file_type_suffix):
