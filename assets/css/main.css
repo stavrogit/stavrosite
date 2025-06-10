@@ -1909,7 +1909,8 @@ input, select, textarea {
 	}
 
 		#header > .container {
-			padding: 14em 0 7em 0;
+			padding: 5em 0 5em 0;
+			/* old is 14 0 7 as of 20250610 */
 			border-bottom: solid 2px #e5e5e5;
 			box-shadow: inset 0px -8px 0px 0px #fff, inset 0px -10px 0px 0px #e5e5e5;
 		}
@@ -1941,7 +1942,8 @@ input, select, textarea {
 
 	#nav {
 		position: absolute;
-		top: 3em;
+		top: 1em;
+		/* was 3em 20240610 */
 		left: 0;
 		width: 100%;
 		cursor: default;
