@@ -5,6 +5,51 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="assets/css/main.css" />
+		<style>
+			/* Styling for the expandable section */
+			details {
+				border: 1px solid #e5e5e5;
+				border-radius: 4px;
+				padding: 0.5em 1em;
+				margin-bottom: 1.5em;
+				background: #f7f7f7;
+			}
+			summary {
+				position: relative; 
+				cursor: pointer;
+				font-weight: bold;
+				outline: none;
+				list-style: none; 
+				text-align: center; 
+				padding: 0.5em 0;
+			}
+			summary::-webkit-details-marker {
+				display: none;
+			}
+			summary::before {
+				content: '►';
+				position: absolute;
+				left: 1em;
+				top: 50%;
+				transform: translateY(-50%);
+			}
+			summary::after {
+				content: '◄';
+				position: absolute;
+				right: 1em;
+				top: 50%;
+				transform: translateY(-50%);
+			}
+			details[open] summary {
+				margin-bottom: 0.75em;
+			}
+			
+			/* Override for copyright on this page to match index.html */
+			#copyright {
+				margin-top: 0;
+				padding-top: 5em;
+			}
+		</style>
 	</head>
 	<body class="no-sidebar is-preload">
 		<div id="page-wrapper">
@@ -14,7 +59,6 @@
 
 					<h1 id="logo" style="margin-bottom: 0.25em;"><a href="stavrocast.html">STAVROCAST</a></h1>
 					<p style="margin-top: 0; font-size: 0.9em;">GEFS Ensemble Forecast Uncertainty Analysis</p>
-
 				</div>
 			</section>
 
@@ -23,6 +67,13 @@
 					<div id="content">
 
 						<article class="box post" style="border-top: none; box-shadow: none; margin-top:0; padding-top:0;">
+
+							<details>
+								<summary>What is this? Click to learn more</summary>
+								<p style="text-align: left; margin-bottom: 0;">
+									The interactive map displays a 72-hour cumulative precipitation forecast and allows users to locate specific airport codes by zooming and panning. To generate a detailed forecast plot, select a state and airport from the dropdown menus and click 'Get Forecast'. The resulting plot visualizes the complete range of probable temperature and precipitation outcomes from the latest <a href="https://www.ncei.noaa.gov/products/weather-climate-models/global-ensemble-forecast" target="_blank">Global Ensemble Forecast System (GEFS)</a> model run, providing a comprehensive view of forecast uncertainty.
+								</p>
+							</details>
 
 							<div class="row">
 
@@ -75,7 +126,13 @@
 				</div>
 			</section>
 
+			<div id="copyright" class="container">
+					<ul class="links">
+						<li>© Stavros Calos. All rights reserved.</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+					</ul>
 			</div>
+
+		</div>
 
 		<script src="assets/js/jquery.min.js"></script>
 		<script src="assets/js/jquery.dropotron.min.js"></script>
