@@ -1,124 +1,132 @@
 <!DOCTYPE HTML>
 <html>
- 	<head>
-<title>Stavros' Portfolio - Home</title>
- 		<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
- 		<link rel="stylesheet" href="assets/css/main.css" />
-<style>
- 			.video-container {
- 				position: relative;
- 				padding-bottom: 56.25%;
-/* 16:9 aspect ratio */
- 				height: 0;
- 				overflow: hidden;
- 				max-width: 100%;
- 				background: #000;
+	<head>
+		<title>Stavros Calos - Home</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<style>
+			.video-container {
+				position: relative;
+				padding-bottom: 56.25%; /* 16:9 aspect ratio */
+				height: 0;
+				overflow: hidden;
+				max-width: 100%;
+				background: #000;
 				border-radius: 4px; /* Matching the template's border radius */
- 			}
-.video-container iframe {
- 				position: absolute;
- 				top: 0;
- 				left: 0;
- 				width: 100%;
-height: 100%;
- 			}
- 
- 			/* Custom Spacing Adjustments */
-#banner {
- 				padding-bottom: 5em;
- 			}
- 			#copyright {
-margin-top: 0;
- 				padding-top: 5em;
- 			}
- 		</style>
-</head>
- 	<body class="homepage is-preload">
- 		<div id="page-wrapper">
- 
-<section id="header">
- 				<div class="container">
- 					<h1 id="logo">Stavros Calos</h1>
-<p>A showcase of some recent GIS and data science products I've created</p>
-<nav id="nav">
- 						<ul>
- 						</ul>
-</nav>
- 				</div>
- 			</section>
- 
-<section id="features">
- 				<div class="container">
- 					<header>
-<h2>Sample Projects</h2>
- 					</header>
- 					<div class="row aln-center">
-<div class="col-4 col-6-medium col-12-small">
- 
- 							<section>
-<a href="https://stavrosss.maps.arcgis.com/apps/instant/sidebar/index.html?appid=b243cb3eb584448bb0b8081c792819b8" target="_blank" class="image featured"><img src="images/subsearch_intro.jpg" alt="Substation Viewer Map" /></a>
- 								<header>
-<h3>OpenStreetMap Substation Viewer</h3>
- 								</header>
-<p>This tool allows users to search for over 60,000 US substations by owner name (as included in the OpenStreetMap database).
-The tool also identifies substations that have been newly added to the OpenStreetMap within the last month.</p>
-</section>
- 
- 						</div>
- 						<div class="col-4 col-6-medium col-12-small">
- 
-<section>
- 								<a href="https://stavrosss.maps.arcgis.com/apps/instant/basic/index.html?appid=4b7063dc9876400181d34ade397a71e1" target="_blank" class="image featured"><img src="images/USA_Parcels_intro.png" alt="USA Parcel Sizes Map" /></a>
-<header>
- 									<h3>USA Average Parcel Sizes</h3>
- 								</header>
-<p>Average parcel sizes are important in prospecting for land development projects.
-I built a raster image representing average parcel size throughout most of the US by using Python and PostgreSQL to analyze over 150 million publicly available parcel centroid points.</p>
-</section>
- 
- 						</div>
- 						<div class="col-4 col-6-medium col-12-small">
- 
-<section>
- 								<a href="https://albemarle.maps.arcgis.com/apps/instant/basic/index.html?appid=718f5cde68924d7bbf3cb1829b49c2dc" target="_blank" class="image featured"><img src="images/DA_intro.jpg" alt="Albemarle County Flow Pathways Map" /></a>
-<header>
- 									<h3>Charlottesville and Albemarle Overland Flow Pathways</h3>
- 								</header>
-<p>Understanding overland flow pathways and their drainage areas is useful in flood risk assessment, new development permitting, and identifying sources and destination for pollution.
-I built this web app in order to assist with these goals.</p>
-</section>
- 
- 						</div>
- 						<div class="col-12">
-</div>
- 					</div>
- 				</div>
- 			</section>
+			}
+			.video-container iframe {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+			}
+
+			/* Custom Spacing Adjustments */
+			#banner {
+				padding-bottom: 5em;
+			}
+			#copyright {
+				margin-top: 0;
+				padding-top: 5em;
+			}
+		</style>
+	</head>
+	<body class="homepage is-preload">
+		<div id="page-wrapper">
+
+			<section id="header">
+				<div class="container">
+					<h1 id="logo">Stavros Calos</h1>
+					<p>A showcase of some recent GIS and data science products I've created</p>
+					<nav id="nav">
+						<ul>
+						</ul>
+					</nav>
+				</div>
+			</section>
+
+			<section id="features">
+				<div class="container">
+					<header>
+						<h2>Sample Projects</h2>
+					</header>
+					<div class="row aln-center">
+						<div class="col-6 col-6-medium col-12-small">
+
+							<section>
+								<a href="https://stavrosss.maps.arcgis.com/apps/instant/basic/index.html?appid=4b7063dc9876400181d34ade397a71e1" target="_blank" class="image featured"><img src="images/USA_Parcels_intro.png" alt="USA Parcel Sizes Map" /></a>
+								<header>
+									<h3>USA Average Parcel Sizes</h3>
+								</header>
+								<p>Average parcel sizes are important in prospecting for land development projects. I built a raster image representing average parcel size throughout most of the US by using Python and PostgreSQL to analyze over 150 million publicly available parcel centroid points.</p>
+							</section>
+
+						</div>
+						<div class="col-6 col-6-medium col-12-small">
+
+							<section>
+								<a href="http://www.stavroscalos.com/stavrocast" target="_blank" class="image featured"><img src="images/stavrocast_intro_img.jpg" alt="Stavrocast Weather App" /></a>
+								<header>
+									<h3>NEW! Stavrocast Weather Forecast Uncertainty Analysis</h3>
+								</header>
+								<p>Enter a US airport name to see the full range of equally probable 8 day temperature and precipitation forecasts predicted by the <a href="https://www.ncei.noaa.gov/products/weather-climate-models/global-ensemble-forecast" target="_blank">GEFS forecast model</a>.</p>
+							</section>
+
+						</div>
+						<div class="col-6 col-6-medium col-12-small">
+
+							<section>
+								<a href="https://stavrosss.maps.arcgis.com/apps/instant/sidebar/index.html?appid=b243cb3eb584448bb0b8081c792819b8" target="_blank" class="image featured"><img src="images/subsearch_intro.jpg" alt="Substation Viewer Map" /></a>
+								<header>
+									<h3>OpenStreetMap Substation Viewer</h3>
+								</header>
+								<p>This tool allows users to search for over 60,000 US substations by owner name (as included in the OpenStreetMap database). The tool also identifies substations that have been newly added to the OpenStreetMap within the last month.</p>
+							</section>
+
+						</div>
+						<div class="col-6 col-6-medium col-12-small">
+
+							<section>
+								<a href="https://albemarle.maps.arcgis.com/apps/instant/basic/index.html?appid=718f5cde68924d7bbf3cb1829b49c2dc" target="_blank" class="image featured"><img src="images/DA_intro.jpg" alt="Albemarle County Flow Pathways Map" /></a>
+								<header>
+									<h3>Charlottesville and Albemarle Overland Flow Pathways</h3>
+								</header>
+								<p>Understanding overland flow pathways and their drainage areas is useful in flood risk assessment, new development permitting, and identifying sources and destination for pollution. I built this web app in order to assist with these goals.</p>
+							</section>
+
+						</div>
+						<div class="col-12">
+						</div>
+					</div>
+				</div>
+			</section>
+
 			<section id="banner">
- 				<div class="container">
-<p>Video Walkthrough of Stavros' Web Mapping Products</p>
- 					
- 					<div class="video-container">
- 						<iframe width="560" height="315" src="https://www.youtube.com/embed/-gAQo_4PMKE?si=iI_xJX6GR4qKOUjj" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-</div>
- 				</div>
- 			</section>
- 			
-<div id="copyright" class="container">
- 					<ul class="links">
- 						<li>© Stavros Calos.
-All rights reserved.</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
- 					</ul>
- 			</div>
-</div>
- 
- 		<script src="assets/js/jquery.min.js"></script>
- 		<script src="assets/js/jquery.dropotron.min.js"></script>
-<script src="assets/js/browser.min.js"></script>
- 		<script src="assets/js/breakpoints.min.js"></script>
- 		<script src="assets/js/util.js"></script>
-<script src="assets/js/main.js"></script>
- 
- 	</body>
+				<div class="container">
+					<p>Video Walkthrough of Stavros' Web Products</p>
+					
+					<div class="video-container">
+						<iframe width="560" height="315" src="https://www.youtube.com/embed/-gAQo_4PMKE?si=iI_xJX6GR4qKOUjj" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+					</div>
+				</div>
+			</section>
+			
+			<div id="copyright" class="container">
+					<ul class="links">
+						<li>© Stavros Calos. All rights reserved.</li><li>HTML5 Template: <a href="http://html5up.net">HTML5 UP</a></li>
+					</ul>
+			</div>
+
+		</div>
+
+		<script src="assets/js/jquery.min.js"></script>
+		<script src="assets/js/jquery.dropotron.min.js"></script>
+		<script src="assets/js/browser.min.js"></script>
+		<script src="assets/js/breakpoints.min.js"></script>
+		<script src="assets/js/util.js"></script>
+		<script src="assets/js/main.js"></script>
+
+	</body>
 </html>
