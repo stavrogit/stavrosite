@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Return on Equity Calculator</title>
+    <link rel="stylesheet" href="roe-style.css">
+</head>
+<body>
+    <div class="main-container">
+        <h1>Return on Equity Calculator</h1>
+        <p class="description">This tool helps rental property owners analyze relative tradeoffs benefits between keeping an income generating asset vs. selling and reinvesting elsewhere.</p>
+        
+        <div class="container">
+            <h2>Inputs</h2>
+            
+            <fieldset>
+                <legend>1. Property & Value</legend>
+                <div class="input-group">
+                    <label for="market-value">Current Market Value:</label>
+                    <input type="text" id="market-value" placeholder="e.g., 500,000">
+                </div>
+                <div class="input-group">
+                    <label for="purchase-price">Original Purchase Price:</label>
+                    <input type="text" id="purchase-price" placeholder="e.g., 350,000">
+                </div>
+                <div class="input-group">
+                    <label for="improvements">Value of Capital Improvements:</label>
+                    <input type="text" id="improvements" placeholder="e.g., 25,000">
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>2. Original Loan Details</legend>
+                <div class="input-group">
+                    <label for="loan-amount">Original Loan Amount:</label>
+                    <input type="text" id="loan-amount" placeholder="e.g., 280,000">
+                </div>
+                <div class="input-group">
+                    <label for="interest-rate">Mortgage Interest Rate (%):</label>
+                    <input type="text" id="interest-rate" placeholder="e.g., 3.5">
+                </div>
+                <div class="input-group">
+                    <label for="loan-term">Loan Term (Years):</label>
+                    <input type="number" id="loan-term" value="30">
+                </div>
+                <div class="input-group">
+                    <label for="loan-start-date">Loan Start Date:</label>
+                    <input type="date" id="loan-start-date">
+                </div>
+            </fieldset>
+            
+            <fieldset>
+                <legend>3. Annual Income & Expenses</legend>
+                <div class="input-group">
+                    <label for="annual-rent">Gross Annual Rental Income:</label>
+                    <input type="text" id="annual-rent" placeholder="e.g., 36,000">
+                </div>
+                <div class="input-group">
+                    <label for="property-taxes">Annual Property Taxes:</label>
+                    <input type="text" id="property-taxes" placeholder="e.g., 6,000">
+                </div>
+                <div class="input-group">
+                    <label for="insurance">Annual Insurance:</label>
+                    <input type="text" id="insurance" placeholder="e.g., 1,500">
+                </div>
+                <div class="input-group">
+                    <label for="maintenance-capex">Annual Maintenance & CapEx:</label>
+                    <input type="text" id="maintenance-capex" placeholder="e.g., 2,000">
+                </div>
+                <div class="input-group">
+                    <label for="management-fees">Annual Property Management Fees:</label>
+                    <div class="input-with-toggle">
+                        <input type="text" id="management-fees" placeholder="e.g., 8">
+                        <select id="management-fees-type">
+                            <option value="percent">%</option>
+                            <option value="amount">$</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="other-expenses">Other Annual Expenses:</label>
+                    <input type="text" id="other-expenses" placeholder="e.g., 500">
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>4. Future Assumptions & Sale Info</legend>
+                <div class="input-group">
+                    <label for="property-appreciation">Expected Annual Property Appreciation (%):</label>
+                    <input type="text" id="property-appreciation" placeholder="e.g., 3">
+                </div>
+                <div class="input-group">
+                    <label for="rent-appreciation">Expected Annual Rent Appreciation (%):</label>
+                    <input type="text" id="rent-appreciation" placeholder="e.g., 2">
+                </div>
+                <div class="input-group">
+                    <label for="selling-costs">Selling Costs (%):</label>
+                    <input type="text" id="selling-costs" value="6">
+                </div>
+                <div class="input-group">
+                    <label for="tax-rate">Estimated Capital Gains Tax Rate (%):</label>
+                    <input type="text" id="tax-rate" placeholder="e.g., 15">
+                </div>
+            </fieldset>
+
+             <fieldset>
+                <legend>5. Your Alternative Investment</legend>
+                <div class="input-group">
+                    <label for="alternative-return">Expected Annual Return (%):</label>
+                    <input type="text" id="alternative-return" placeholder="e.g., 8">
+                </div>
+            </fieldset>
+        </div>
+
+        <div class="container results-container">
+            <h2>Comparison: Next Year's Projected Gain</h2>
+            <div class="results-wrapper">
+                <div class="results-column" id="results-keeping">
+                    <h3>KEEP Property</h3>
+                    <div class="result-headline" id="gain-from-keeping">$0</div>
+                    <ul class="result-details">
+                        <li><span class="label">Projected Cash Flow</span><span id="detail-cash-flow">$0</span></li>
+                        <li><span class="label">Principal Paydown</span><span id="detail-principal-paid">$0</span></li>
+                        <li><span class="label">Projected Appreciation</span><span id="detail-appreciation">$0</span></li>
+                        <li class="divider"></li>
+                        <li><span class="label"><strong>Return on Equity (ROE)</strong></span><strong id="detail-roe">0%</strong></li>
+                    </ul>
+                </div>
+                <div class="results-column" id="results-selling">
+                    <h3>SELL Property</h3>
+                    <div class="result-headline" id="gain-from-selling">$0</div>
+                     <ul class="result-details">
+                        <li><span class="label">Gross Proceeds</span><span id="detail-gross-proceeds">$0</span></li>
+                        <li><span class="label">Est'd Loan Payoff Cost</span><span id="detail-loan-payoff">$0</span></li>
+                        <li><span class="label">Sale Expenses</span><span id="detail-sale-expenses">$0</span></li>
+                        <li><span class="label">Est'd Capital Gains Tax</span><span id="detail-cap-gains-tax">$0</span></li>
+                        <li class="divider"></li>
+                        <li class="bold-summary-row"><span class="label">Net Proceeds from Sale</span><span id="detail-net-proceeds">$0</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container explanation-container">
+            <details>
+                <summary>How are these metrics calculated?</summary>
+                <div class="explanation-content">
+                    <h4>KEEP Property</h4>
+                    <p>The <strong>Projected 1-Year Gain from Keeping</strong> is the total wealth you are projected to build over the next 12 months. It is the sum of three parts:</p>
+                    <ul>
+                        <li><strong>Projected Cash Flow:</strong> Your <strong>Gross Annual Rental Income</strong> (increased by your <strong>Expected Annual Rent Appreciation %</strong>) minus all cash expenses. Expenses include your mortgage interest payments, <strong>Annual Property Taxes</strong>, <strong>Annual Insurance</strong>, <strong>Annual Maintenance & CapEx</strong>, <strong>Annual Property Management Fees</strong>, and <strong>Other Annual Expenses</strong>.</li>
+                        <li><strong>Principal Paydown:</strong> The portion of your mortgage payments over the next year that reduces your loan balance, building your equity. This is calculated using your <strong>Original Loan Details</strong>.</li>
+                        <li><strong>Projected Appreciation:</strong> The potential increase in the property's value, calculated by applying the <strong>Expected Annual Property Appreciation %</strong> to the <strong>Current Market Value</strong>.</li>
+                    </ul>
+                    
+                    <h4>SELL Property</h4>
+                    <p>The <strong>Projected 1-Year Gain from Selling</strong> is the return you could potentially earn by reinvesting the cash from a sale. It is calculated in two main steps:</p>
+                    <ul>
+                        <li><strong>1. Net Proceeds from Sale:</strong> This is the cash you'd walk away with. It's your <strong>Current Market Value</strong> minus the <strong>Est'd Loan Payoff Cost</strong>, <strong>Sale Expenses</strong> (from your input %), and the <strong>Est'd Capital Gains Tax</strong>. The tax is estimated using your <strong>Original Purchase Price</strong>, <strong>Value of Capital Improvements</strong>, and your entered <strong>Estimated Capital Gains Tax Rate %</strong>.</li>
+                        <li><strong>2. Projected Gain:</strong> The <strong>Net Proceeds from Sale</strong> is then multiplied by your <strong>Expected Annual Return (%)</strong> on an alternative investment.</li>
+                    </ul>
+                </div>
+            </details>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/autonumeric@4.6.0/dist/autoNumeric.min.js"></script>
+    <script src="roe-script.js"></script>
+</body>
+</html>
