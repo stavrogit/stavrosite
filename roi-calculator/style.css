@@ -169,3 +169,8 @@ button:hover {
 .tooltip .tooltip-text b {
     color: #f1c40f; /* A highlight color for headings */
 }
+
+/* --- Added for Bolding --- */
+.summary-label-bold {
+    font-weight: bold;
+}

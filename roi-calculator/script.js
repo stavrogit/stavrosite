@@ -5,11 +5,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Define options for currency and percentage fields
     const currencyOptions = {
         currencySymbol: '$',
+        suffixText: '', // Explicitly clear the percentage suffix
         digitGroupSeparator: ',',
         decimalCharacter: '.',
         decimalPlaces: 0,
     };
     const percentOptions = {
+        currencySymbol: '', // Explicitly clear the currency symbol
         suffixText: '%',
         decimalPlaces: 2,
         minimumValue: 0
@@ -30,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Also get the standard, non-formatted inputs
     const standardInputs = {
+        loanPeriod: document.getElementById('loan-period'),
         renovationPeriod: document.getElementById('renovation-period'),
         propertyTaxesType: document.getElementById('property-taxes-type'),
         insuranceType: document.getElementById('insurance-type'),
@@ -56,10 +59,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('calculate-btn').addEventListener('click', calculateAndDisplay);
 
     function calculateAndDisplay() {
-        // --- Get input values using autoNumeric's .getNumber() method ---
+        // --- Get input values ---
         const purchasePrice = anInputs.purchasePrice.getNumber() || 0;
         const downPaymentPercent = anInputs.downPayment.getNumber() || 0;
         const interestRatePercent = anInputs.interestRate.getNumber() || 0;
+        const loanPeriod = parseInt(standardInputs.loanPeriod.value) || 30; // Get loan period
         const renovationCosts = anInputs.renovationCosts.getNumber() || 0;
         const renovationPeriod = parseFloat(standardInputs.renovationPeriod.value) || 0;
         const annualPropertyTaxesValue = anInputs.propertyTaxes.getNumber() || 0;
@@ -70,11 +74,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const monthlyMaintenance = anInputs.maintenance.getNumber() || 0;
         const monthlyManagementFees = anInputs.managementFees.getNumber() || 0;
 
-        // --- Calculations (These remain the same) ---
+        // --- Calculations ---
         const downPayment = purchasePrice * (downPaymentPercent / 100);
         const loanAmount = purchasePrice - downPayment;
         const monthlyInterestRate = (interestRatePercent / 100) / 12;
-        const numberOfPayments = 30 * 12;
+        const numberOfPayments = loanPeriod * 12; // Use loan period input
 
         const monthlyMortgagePayment = loanAmount > 0 && monthlyInterestRate > 0 
             ? loanAmount * (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfPayments)) / (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1)
@@ -86,11 +90,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const annualInsurance = insuranceType === 'percent' ? purchasePrice * (annualInsuranceValue / 100) : annualInsuranceValue;
         const monthlyInsurance = annualInsurance / 12;
 
-        const upfrontExpenses = (monthlyMortgagePayment + monthlyTaxes + monthlyInsurance + monthlyMaintenance) * renovationPeriod;
+        // Calculate PITI (Principal, Interest, Taxes, Insurance)
+        const totalMonthlyMortgagePITI = monthlyMortgagePayment + monthlyTaxes + monthlyInsurance;
+
+        const upfrontExpenses = (totalMonthlyMortgagePITI + monthlyMaintenance) * renovationPeriod;
 
         const totalInitialInvestment = downPayment + renovationCosts + upfrontExpenses;
 
-        const totalMonthlyExpenses = monthlyMortgagePayment + monthlyTaxes + monthlyInsurance + monthlyMaintenance + monthlyManagementFees;
+        const totalMonthlyExpenses = totalMonthlyMortgagePITI + monthlyMaintenance + monthlyManagementFees;
 
         const monthlyCashFlow = monthlyRentalIncome - totalMonthlyExpenses;
         const annualCashFlow = monthlyCashFlow * 12;
@@ -105,7 +112,8 @@ document.addEventListener('DOMContentLoaded', () => {
             resultElement.textContent = 'Please fill in all fields with valid numbers to calculate the ROI.';
         }
         
-        // --- Update Summary Table (This function is unchanged) ---
+        // --- Update Summary Table ---
+        // The order of properties here determines the row order in the table
         updateSummaryTable({
             'Purchase Price': purchasePrice,
             'Down Payment': downPayment,
@@ -114,7 +122,8 @@ document.addEventListener('DOMContentLoaded', () => {
             'Mortgage carrying cost (during renovation)': upfrontExpenses,
             'Total Initial Investment': totalInitialInvestment,
             'Loan Amount': loanAmount,
-            'Monthly Mortgage (P&I)': monthlyMortgagePayment,
+            'Loan Period (Years)': loanPeriod,
+            'Total Monthly Mortgage Payment (PITI)': totalMonthlyMortgagePITI,
             'Monthly Taxes': monthlyTaxes,
             'Monthly Insurance': monthlyInsurance,
             'Monthly Maintenance': monthlyMaintenance,
@@ -131,11 +140,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const tableBody = document.querySelector('#summary-table tbody');
         tableBody.innerHTML = ''; 
 
+        // Define which labels in the summary table should be bold
+        const boldKeys = [
+            'Total Monthly Mortgage Payment (PITI)',
+            'Monthly Cash Flow (Post-Reno)',
+            'Annual Cash Flow (Post-Reno)',
+            'Cash-on-Cash ROI (%)'
+        ];
+
         for (const [key, value] of Object.entries(data)) {
             const row = tableBody.insertRow();
             const cell1 = row.insertCell(0);
             const cell2 = row.insertCell(1);
 
+            // Apply bold class to the label cell if its key is in our list
+            if (boldKeys.includes(key)) {
+                cell1.classList.add('summary-label-bold');
+            }
+
+            // Handle special tooltip for the ROI row
             if (key === 'Cash-on-Cash ROI (%)') {
                 cell1.innerHTML = `
                     <div class="tooltip">
@@ -152,10 +175,11 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 cell1.textContent = key;
             }
-
+            
+            // Format the value cell based on the key
             if (key.includes('%')) {
                  cell2.textContent = `${(value || 0).toFixed(2)}%`;
-            } else if (key.includes('Months')) {
+            } else if (key.includes('Years') || key.includes('Months')) {
                 cell2.textContent = value || 0;
             }
             else {
