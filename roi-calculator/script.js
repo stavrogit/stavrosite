@@ -1,54 +1,53 @@
-// File: script.js (REVISED)
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- autoNumeric Initialization ---
-    // Define options for currency and percentage fields
     const currencyOptions = {
         currencySymbol: '$',
-        suffixText: '', // Explicitly clear the percentage suffix
+        suffixText: '',
         digitGroupSeparator: ',',
         decimalCharacter: '.',
         decimalPlaces: 0,
     };
     const percentOptions = {
-        currencySymbol: '', // Explicitly clear the currency symbol
+        currencySymbol: '',
         suffixText: '%',
         decimalPlaces: 2,
         minimumValue: 0
     };
 
-    // Create a map to hold the AutoNumeric instances
     const anInputs = {
         purchasePrice: new AutoNumeric('#purchase-price', currencyOptions),
         downPayment: new AutoNumeric('#down-payment', percentOptions),
         interestRate: new AutoNumeric('#interest-rate', percentOptions),
+        closingCosts: new AutoNumeric('#closing-costs', { ...currencyOptions, decimalPlaces: 2 }), // Allow decimals for percent input
         renovationCosts: new AutoNumeric('#renovation-costs', currencyOptions),
-        propertyTaxes: new AutoNumeric('#property-taxes', currencyOptions), // Default, can be overridden
-        insurance: new AutoNumeric('#insurance', currencyOptions), // Default, can be overridden
+        propertyTaxes: new AutoNumeric('#property-taxes', currencyOptions),
+        insurance: new AutoNumeric('#insurance', currencyOptions),
         rentalIncome: new AutoNumeric('#rental-income', currencyOptions),
-        maintenance: new AutoNumeric('#maintenance', currencyOptions),
+        annualMaintenanceCapex: new AutoNumeric('#annual-maintenance-capex', currencyOptions),
         managementFees: new AutoNumeric('#management-fees', currencyOptions),
     };
     
-    // Also get the standard, non-formatted inputs
     const standardInputs = {
         loanPeriod: document.getElementById('loan-period'),
+        closingCostsType: document.getElementById('closing-costs-type'),
         renovationPeriod: document.getElementById('renovation-period'),
         propertyTaxesType: document.getElementById('property-taxes-type'),
         insuranceType: document.getElementById('insurance-type'),
+        vacancyMonths: document.getElementById('vacancy-months'),
     };
 
     // --- Event Listeners ---
-    // Listen for changes on all autoNumeric inputs
     for (const key in anInputs) {
         anInputs[key].domElement.addEventListener('autoNumeric:rawValueModified', calculateAndDisplay);
     }
-    // Listen for changes on standard inputs
     for (const key in standardInputs) {
         standardInputs[key].addEventListener('input', calculateAndDisplay);
     }
     
-    // Add logic to toggle formatting for taxes and insurance
+    standardInputs.closingCostsType.addEventListener('change', (e) => {
+        anInputs.closingCosts.update(e.target.value === 'percent' ? percentOptions : currencyOptions);
+    });
     standardInputs.propertyTaxesType.addEventListener('change', (e) => {
         anInputs.propertyTaxes.update(e.target.value === 'percent' ? percentOptions : currencyOptions);
     });
@@ -63,7 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const purchasePrice = anInputs.purchasePrice.getNumber() || 0;
         const downPaymentPercent = anInputs.downPayment.getNumber() || 0;
         const interestRatePercent = anInputs.interestRate.getNumber() || 0;
-        const loanPeriod = parseInt(standardInputs.loanPeriod.value) || 30; // Get loan period
+        const loanPeriod = parseInt(standardInputs.loanPeriod.value) || 30;
+        const closingCostsValue = anInputs.closingCosts.getNumber() || 0;
+        const closingCostsType = standardInputs.closingCostsType.value;
         const renovationCosts = anInputs.renovationCosts.getNumber() || 0;
         const renovationPeriod = parseFloat(standardInputs.renovationPeriod.value) || 0;
         const annualPropertyTaxesValue = anInputs.propertyTaxes.getNumber() || 0;
@@ -71,14 +72,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const annualInsuranceValue = anInputs.insurance.getNumber() || 0;
         const insuranceType = standardInputs.insuranceType.value;
         const monthlyRentalIncome = anInputs.rentalIncome.getNumber() || 0;
-        const monthlyMaintenance = anInputs.maintenance.getNumber() || 0;
+        const vacancyMonths = parseFloat(standardInputs.vacancyMonths.value) || 0;
+        const annualMaintenanceCapex = anInputs.annualMaintenanceCapex.getNumber() || 0;
         const monthlyManagementFees = anInputs.managementFees.getNumber() || 0;
 
         // --- Calculations ---
         const downPayment = purchasePrice * (downPaymentPercent / 100);
         const loanAmount = purchasePrice - downPayment;
+        
+        const closingCosts = closingCostsType === 'percent' ? purchasePrice * (closingCostsValue / 100) : closingCostsValue;
+
         const monthlyInterestRate = (interestRatePercent / 100) / 12;
-        const numberOfPayments = loanPeriod * 12; // Use loan period input
+        const numberOfPayments = loanPeriod * 12;
 
         const monthlyMortgagePayment = loanAmount > 0 && monthlyInterestRate > 0 
             ? loanAmount * (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfPayments)) / (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1)
@@ -90,19 +95,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const annualInsurance = insuranceType === 'percent' ? purchasePrice * (annualInsuranceValue / 100) : annualInsuranceValue;
         const monthlyInsurance = annualInsurance / 12;
 
-        // Calculate PITI (Principal, Interest, Taxes, Insurance)
         const totalMonthlyMortgagePITI = monthlyMortgagePayment + monthlyTaxes + monthlyInsurance;
+        
+        const monthlyMaintenanceAndCapex = annualMaintenanceCapex / 12;
+        
+        // This carrying cost now includes maintenance/capex
+        const upfrontExpenses = (totalMonthlyMortgagePITI + monthlyMaintenanceAndCapex) * renovationPeriod;
+        const totalInitialInvestment = downPayment + closingCosts + renovationCosts + upfrontExpenses;
 
-        const upfrontExpenses = (totalMonthlyMortgagePITI + monthlyMaintenance) * renovationPeriod;
+        const effectiveMonthlyRentalIncome = monthlyRentalIncome * (1 - (vacancyMonths / 12));
+        const vacancyLoss = monthlyRentalIncome - effectiveMonthlyRentalIncome;
 
-        const totalInitialInvestment = downPayment + renovationCosts + upfrontExpenses;
+        const totalMonthlyExpenses = totalMonthlyMortgagePITI + monthlyMaintenanceAndCapex + monthlyManagementFees;
 
-        const totalMonthlyExpenses = totalMonthlyMortgagePITI + monthlyMaintenance + monthlyManagementFees;
-
-        const monthlyCashFlow = monthlyRentalIncome - totalMonthlyExpenses;
+        const monthlyCashFlow = effectiveMonthlyRentalIncome - totalMonthlyExpenses;
         const annualCashFlow = monthlyCashFlow * 12;
 
-        const cashOnCashROI = (annualCashFlow / totalInitialInvestment) * 100;
+        const cashOnCashROI = totalInitialInvestment > 0 ? (annualCashFlow / totalInitialInvestment) * 100 : 0;
 
         // --- Display Result ---
         const resultElement = document.getElementById('result');
@@ -113,10 +122,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // --- Update Summary Table ---
-        // The order of properties here determines the row order in the table
         updateSummaryTable({
             'Purchase Price': purchasePrice,
             'Down Payment': downPayment,
+            'Closing Costs': closingCosts,
             'Renovation Costs': renovationCosts,
             'Upfront Renovation Period (Months)': renovationPeriod,
             'Mortgage carrying cost (during renovation)': upfrontExpenses,
@@ -126,10 +135,11 @@ document.addEventListener('DOMContentLoaded', () => {
             'Total Monthly Mortgage Payment (PITI)': totalMonthlyMortgagePITI,
             'Monthly Taxes': monthlyTaxes,
             'Monthly Insurance': monthlyInsurance,
-            'Monthly Maintenance': monthlyMaintenance,
+            'Monthly Maintenance + CapEx': monthlyMaintenanceAndCapex,
             'Monthly Management': monthlyManagementFees,
             'Total Monthly Expenses (Post-Reno)': totalMonthlyExpenses,
-            'Monthly Rental Income': monthlyRentalIncome,
+            'Gross Monthly Rental Income': monthlyRentalIncome,
+            'Vacancy Loss (-)': vacancyLoss,
             'Monthly Cash Flow (Post-Reno)': monthlyCashFlow,
             'Annual Cash Flow (Post-Reno)': annualCashFlow,
             'Cash-on-Cash ROI (%)': cashOnCashROI
@@ -140,7 +150,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const tableBody = document.querySelector('#summary-table tbody');
         tableBody.innerHTML = ''; 
 
-        // Define which labels in the summary table should be bold
         const boldKeys = [
             'Total Monthly Mortgage Payment (PITI)',
             'Monthly Cash Flow (Post-Reno)',
@@ -153,12 +162,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const cell1 = row.insertCell(0);
             const cell2 = row.insertCell(1);
 
-            // Apply bold class to the label cell if its key is in our list
             if (boldKeys.includes(key)) {
                 cell1.classList.add('summary-label-bold');
             }
 
-            // Handle special tooltip for the ROI row
             if (key === 'Cash-on-Cash ROI (%)') {
                 cell1.innerHTML = `
                     <div class="tooltip">
@@ -176,13 +183,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 cell1.textContent = key;
             }
             
-            // Format the value cell based on the key
             if (key.includes('%')) {
                  cell2.textContent = `${(value || 0).toFixed(2)}%`;
             } else if (key.includes('Years') || key.includes('Months')) {
                 cell2.textContent = value || 0;
-            }
-            else {
+            } else {
                  cell2.textContent = formatCurrency(value || 0);
             }
         }
@@ -191,6 +196,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function formatCurrency(value) {
         return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
     }
+
+    // Trigger update for default closing cost type
+    standardInputs.closingCostsType.dispatchEvent(new Event('change'));
 
     // Initial calculation on page load
     calculateAndDisplay();

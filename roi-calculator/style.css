@@ -148,7 +148,7 @@ button:hover {
     text-align: left;
     border-radius: 6px;
     padding: 10px;
-    
+
     /* Position the tooltip */
     position: absolute;
     z-index: 1;
@@ -173,4 +173,64 @@ button:hover {
 /* --- Added for Bolding --- */
 .summary-label-bold {
     font-weight: bold;
+}
+
+/* --- Responsive Styles for Mobile --- */
+@media (max-width: 600px) {
+    body {
+        padding: 1rem;
+    }
+
+    .container, .table-container {
+        padding: 1.5rem;
+    }
+
+    h1 {
+        font-size: 1.8rem;
+    }
+
+    /* --- NEW: Responsive Table using CSS Grid --- */
+    #summary-table thead {
+        display: none; /* Hide table headers */
+    }
+
+    #summary-table,
+    #summary-table tbody,
+    #summary-table tr,
+    #summary-table td {
+        display: block; /* Break down default table behaviors */
+        border: none;
+    }
+
+    #summary-table tr {
+        display: grid; /* Each row is a 2-column grid */
+        grid-template-columns: 1fr auto; /* Col 1 is flexible, Col 2 fits content */
+        align-items: center;
+        gap: 1rem; /* Space between columns */
+        padding: 0.85rem 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    #summary-table tr:last-child {
+        border-bottom: none;
+    }
+
+    #summary-table td {
+        padding: 0;
+        background: transparent !important; /* Override alternating row styles */
+        text-align: left; /* Reset alignment */
+    }
+
+    #summary-table td:last-child {
+        text-align: right; /* Align value to the right */
+    }
+
+    /* Make the tooltip responsive */
+    .tooltip .tooltip-text {
+        width: 90vw; /* 90% of the viewport width */
+        max-width: 300px;
+        left: 50%;
+        transform: translateX(-50%); /* Center the tooltip */
+        margin-left: 0;
+    }
 }
