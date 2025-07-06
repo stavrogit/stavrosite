@@ -167,7 +167,7 @@ def create_graphs(airport_code,
             first_date_zulu = first_date_et.tz_convert('UTC')
             et_str = first_date_et.strftime(TEXT_DATE_FORMAT)
             zulu_str = first_date_zulu.strftime(TEXT_DATE_FORMAT)
-            line1 = f"10 day Forecast at {airport_code.upper()} Airport\n"
+            line1 = f"8 day Forecast at {airport_code.upper()} Airport\n"
             line2 = f"GEFS Model Run: {et_str} ET ({zulu_str} Z)"
             ax_text.text(0.5, 0.80, line1.strip(), ha='center', va='center', fontsize=13, fontweight='bold', transform=ax_text.transAxes)
             ax_text.text(0.5, 0.35, line2.strip(), ha='center', va='center', fontsize=9, transform=ax_text.transAxes)

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Estate ROI Calculator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="main-container">
+        <h1>Real Estate ROI Calculator</h1>
+        <div class="container">
+            <div class="input-group">
+                <label for="purchase-price">Home Purchase Price:</label>
+                <input type="text" id="purchase-price" placeholder="e.g., 300,000">
+            </div>
+            <div class="input-group">
+                <label for="down-payment">Down Payment (%):</label>
+                <input type="text" id="down-payment" placeholder="e.g., 20">
+            </div>
+            <div class="input-group">
+                <label for="interest-rate">Mortgage Interest Rate (%):</label>
+                <input type="text" id="interest-rate" step="0.01" placeholder="e.g., 5.5">
+            </div>
+            <div class="input-group">
+                <label for="loan-period">Loan Period (Years):</label>
+                <input type="number" id="loan-period" value="30" placeholder="e.g., 30">
+            </div>
+            <div class="input-group">
+                <label for="renovation-costs">Renovation Costs:</label>
+                <input type="text" id="renovation-costs" placeholder="e.g., 10,000">
+            </div>
+            <div class="input-group">
+                <label for="renovation-period">Number of months required for pre-rental repairs:</label>
+                <input type="number" id="renovation-period" placeholder="e.g., 3">
+            </div>
+            <div class="input-group">
+                <label for="property-taxes">Annual Property Taxes:</label>
+                <div class="input-with-toggle">
+                    <input type="text" id="property-taxes" placeholder="e.g., 4,000">
+                    <select id="property-taxes-type">
+                        <option value="amount">$</option>
+                        <option value="percent">%</option>
+                    </select>
+                </div>
+            </div>
+            <div class="input-group">
+                <label for="insurance">Annual Insurance:</label>
+                <div class="input-with-toggle">
+                    <input type="text" id="insurance" placeholder="e.g., 1,200">
+                    <select id="insurance-type">
+                        <option value="amount">$</option>
+                        <option value="percent">%</option>
+                    </select>
+                </div>
+            </div>
+            <div class="input-group">
+                <label for="rental-income">Monthly Rental Income:</label>
+                <input type="text" id="rental-income" placeholder="e.g., 2,500">
+            </div>
+            <div class="input-group">
+                <label for="maintenance">Monthly Maintenance Fees:</label>
+                <input type="text" id="maintenance" placeholder="e.g., 150">
+            </div>
+            <div class="input-group">
+                <label for="management-fees">Monthly Property Management Fees:</label>
+                <input type="text" id="management-fees" placeholder="e.g., 200">
+            </div>
+            <button id="calculate-btn">Calculate ROI</button>
+            <p id="result"></p>
+        </div>
+        <div class="table-container">
+            <h2>Summary</h2>
+            <table id="summary-table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/autonumeric@4.6.0/dist/autoNumeric.min.js"></script>
+
+    <script src="script.js"></script>
+</body>
+</html>
