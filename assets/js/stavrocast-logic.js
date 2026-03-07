@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // IMPORTANT: Ensure this URL matches your PythonAnywhere config
         // New Endpoint: /stavrocast/plot
-        const baseUrl = 'http://StaviMondavi.pythonanywhere.com'; 
+        const baseUrl = 'https://StaviMondavi.pythonanywhere.com'; 
         const plotUrl = `${baseUrl}/stavrocast/plot?lat=${selectedLat}&lon=${selectedLon}&days=${days}`;
 
         imagePlaceholderText.textContent = 'Generating custom ECMWF forecast... this takes about 5-10 seconds.';
