@@ -23,37 +23,34 @@
 				text-align: center; 
 				padding: 0.5em 0;
 			}
-			summary::-webkit-details-marker {
-				display: none;
-			}
+			summary::-webkit-details-marker { display: none; }
 			summary::before {
 				content: '►';
-				position: absolute;
-				left: 1em;
-				top: 50%;
-				transform: translateY(-50%);
+				position: absolute; left: 1em; top: 50%; transform: translateY(-50%);
 			}
 			summary::after {
 				content: '◄';
-				position: absolute;
-				right: 1em;
-				top: 50%;
-				transform: translateY(-50%);
+				position: absolute; right: 1em; top: 50%; transform: translateY(-50%);
 			}
-			details[open] summary {
-				margin-bottom: 0.75em;
-			}
+			details[open] summary { margin-bottom: 0.75em; }
 			
-			/* Override for copyright on this page to match index.html */
-			#copyright {
-				margin-top: 0;
-				padding-top: 5em;
+			/* Autocomplete Search Styles */
+			.search-wrapper { position: relative; margin-bottom: 1.5em; }
+			#locationInput { width: 100%; }
+			#suggestionsList {
+				position: absolute; top: 100%; left: 0; right: 0;
+				background: white; border: 1px solid #ddd; border-top: none;
+				list-style: none; margin: 0; padding: 0;
+				z-index: 1000; display: none; max-height: 200px; overflow-y: auto;
+				box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 			}
+			#suggestionsList li { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; text-align: left; font-size: 0.9em; margin: 0;}
+			#suggestionsList li:hover { background-color: #f0f0f0; color: #ed786a; }
 
+			/* Override for copyright on this page to match index.html */
+			#copyright { margin-top: 0; padding-top: 5em; }
 			/* Hide mobile navigation bar */
-			#titleBar {
-				display: none;
-			}
+			#titleBar { display: none; }
 		</style>
 	</head>
 	<body class="no-sidebar is-preload">
@@ -61,13 +58,9 @@
 
 			<section id="header" style="padding-top: 1.5em; padding-bottom: 1.5em; min-height: 0;">
 				<div class="container" style="padding-top: 1em; padding-bottom: 0em; border-bottom: none; box-shadow: none;">
-				
 					<h1 id="logo" style="margin-bottom: 0.25em;"><a href="stavrocast.html">STAVROCAST</a></h1>
-					<p style="margin-top: 0; font-size: 0.9em;">GEFS Ensemble Forecast Uncertainty Analysis</p>
-					<nav id="nav">
-						<ul>
-						</ul>
-					</nav>
+					<p style="margin-top: 0; font-size: 0.9em;">ECMWF Ensemble Forecast Uncertainty Analysis</p>
+					<nav id="nav"><ul></ul></nav>
 				</div>
 			</section>
 
@@ -79,26 +72,33 @@
 							<details>
 								<summary>What is this? Click to learn more</summary>
 								<p style="text-align: left; margin-bottom: 0;">
-									The main purpose of Stavrocast is to help users better visualize cumulative precipitation forecasts and their inherent uncertainty. The interactive map displays a 72-hour cumulative precipitation forecast from the National Weather Service and allows users to locate specific airport codes by zooming and panning. To generate a detailed forecast plot, select a state and airport from the dropdown menus and click 'Get Forecast'. (Currently, detailed plots are only available at points shown on the map. Hopefully there is one near you!) The resulting plot visualizes the full range of equally probable temperature and precipitation outcomes from the latest <a href="https://www.ncei.noaa.gov/products/weather-climate-models/global-ensemble-forecast" target="_blank">Global Ensemble Forecast System (GEFS)</a> model run. Additional disclaimers and documentation regarding specific forecast data that feeds these detailed plots are available at <a href="https://www.emc.ncep.noaa.gov/users/meg/gefs_plumes/index.html?" target="_blank">this link</a>.
+									Stavrocast helps visualize forecast uncertainty. The map (right) displays cumulative precipitation forecasts. To generate a detailed <strong>Ensemble Plot</strong>, use the search box on the left to find your city or county. The resulting plot visualizes the full range of probable temperature, snow, and wind outcomes from the latest ECMWF Ensemble model run.
 								</p>
 							</details>
 
 							<div class="row">
-
+								<!-- LEFT COLUMN: New Controls -->
 								<div class="col-4 col-12-medium">
-
+									<h3 style="text-align: center; font-size: 1.2em;">Forecast Settings</h3>
+									
 									<div class="row gtr-uniform">
 										<div class="col-12">
-											<label for="stateInput" style="display: block; margin-bottom: 0.5em; text-align: center; font-weight: bold;">Enter State Abbreviation:</label>
-											<input type="text" name="stateInput" id="stateInput" value="" placeholder="e.g., VA" style="max-width: 350px; margin: 0 auto 1.5em auto; display: block;" />
+											<label for="locationInput" style="display: block; margin-bottom: 0.5em; font-weight: bold;">Location Search:</label>
+											<div class="search-wrapper">
+												<input type="text" id="locationInput" placeholder="Enter City, Town, or County..." autocomplete="off" />
+												<ul id="suggestionsList"></ul>
+											</div>
 										</div>
 									</div>
 
 									<div class="row gtr-uniform">
 										<div class="col-12">
-											<label for="airportSelect" style="display: block; margin-bottom: 0.5em; text-align: center; font-weight: bold;">Select Airport:</label>
-											<select name="airportSelect" id="airportSelect" style="max-width: 350px; margin: 0 auto 1.5em auto; display: block;">
-												<option value="">-- Select State First --</option>
+											<label for="daysInput" style="display: block; margin-bottom: 0.5em; font-weight: bold;">Forecast Duration:</label>
+											<select id="daysInput" style="margin-bottom: 1.5em;">
+												<option value="3">3 Days</option>
+												<option value="5">5 Days</option>
+												<option value="10" selected>10 Days</option>
+												<option value="15">15 Days</option>
 											</select>
 										</div>
 									</div>
@@ -106,24 +106,34 @@
 									<div class="row gtr-uniform">
 										<div class="col-12">
 											<ul class="actions" style="margin-top: 1em; text-align: center;">
-												<li><input type="button" id="getForecastButton" value="Get Forecast" class="button" style="min-width: 200px;" /></li>
+												<li><input type="button" id="getForecastButton" value="Get Forecast" class="button primary" style="width: 100%;" disabled /></li>
 											</ul>
+											<p style="font-size: 0.8em; margin-top: 0.5em; text-align: center; color: #888;">
+												<i class="fas fa-info-circle"></i> Search a location to enable the button.
+											</p>
 										</div>
 									</div>
 								</div>
 
+								<!-- RIGHT COLUMN: Existing Map (Preserved) -->
 								<div class="col-8 col-12-medium">
-									<h3 style="text-align: center; margin-bottom: 1em;">Airport Locator and Precip Total Map</h3>
-									<div style="text-align: center;"> <iframe src="https://stavrosss.maps.arcgis.com/apps/instant/basic/index.html?appid=5833e694f5d846a09841c31a5fa9ef16" width="100%" height="600" frameborder="0" style="border:0; max-width: 100%;" allowfullscreen>iFrames are not supported on this page.</iframe>
+									<h3 style="text-align: center; margin-bottom: 1em;">Reference Map</h3>
+									<div style="text-align: center;"> 
+										<iframe src="https://stavrosss.maps.arcgis.com/apps/instant/basic/index.html?appid=5833e694f5d846a09841c31a5fa9ef16" width="100%" height="600" frameborder="0" style="border:0; max-width: 100%;" allowfullscreen>iFrames are not supported on this page.</iframe>
 									</div>
 								</div>
 
-							</div> <div class="row gtr-uniform" style="margin-top: 2.5em;">
+							</div> 
+							
+							<!-- PLOT DISPLAY -->
+							<div class="row gtr-uniform" style="margin-top: 2.5em;">
 								<div class="col-12">
-									<h3 style="text-align: center;">Forecast Plot</h3>
+									<h3 style="text-align: center;">Ensemble Forecast Plot</h3>
 									<span class="image fit" id="forecastImageContainer">
 										<img src="" id="forecastImage" alt="Forecast will appear here" style="display: none; border: 1px solid #ccc; margin: 0 auto;" />
-										<p id="imagePlaceholderText" style="text-align: center; padding: 2em; border: 1px dashed #ccc;">Forecast will appear here once an airport is selected and "Get Forecast" is clicked.</p>
+										<p id="imagePlaceholderText" style="text-align: center; padding: 2em; border: 1px dashed #ccc;">
+											Use the "Location Search" on the left to generate a custom forecast plot.
+										</p>
 									</span>
 								</div>
 							</div>

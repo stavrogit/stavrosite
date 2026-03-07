@@ -1,142 +1,99 @@
 document.addEventListener('DOMContentLoaded', function() {
-                    // Airport data object (State Abbreviation: [Airport Codes])
-                    const airportData = {
-                        "AK": ["PAKP", "PAFM", "PFYU", "PAWD", "PANC", "PANT", "PABR", "PABE", "PACD", "PASY", "PAFA", "PAKN", "PADQ", "PAOT", "PAMC", "PAOM", "PASN", "PAYA", "PABT", "PALU", "PAEH", "PACZ", "PACV", "PASC", "PABI", "PADL", "PAGA", "PAGK", "PAHN", "PAHO", "PAIL", "PAIM", "PAOR", "PAPG", "PASI", "PATK", "PATA", "PATC", "PAUN", "PADU", "PAJN"],
-                        "AL": ["KEET", "KMOB", "KHSV", "KOZR", "KMGM"],
-                        "AR": ["KLIT", "KFSM", "KELD", "KJBR", "KTXK", "KFYV"],
-                        "AZ": ["KPHX", "KTUS", "KFLG", "KPGA", "KYUM", "KGCN", "KINW", "KDUG", "KSAD", "KSOW", "KPRC"],
-                        "CA": ["KLAX", "KSFO", "KFAT", "KMRY", "KSAC", "KSAN", "KEDW", "KPSP", "KRDD", "KVBG", "KNID", "KACV", "KBFL", "KBYS", "KBIH", "KBLH", "KNJK", "KMOD", "KEED", "KPRB", "KSTS", "KONT", "KBLU"],
-                        "CO": ["KDEN", "KGJT", "KPUB", "KAKO", "KASE", "KCAG", "KDRO", "KGXY", "KLAA", "KLIC", "KALS", "KCOS"],
-                        "CT": ["KHFD", "KBDR"],
-                        "FL": ["KJAX", "KMIA", "KEYW", "KMCO", "KTLH", "KTPA", "KGNV", "KMLB", "KVRB", "KVPS", "KRSW", "KPAM", "KDAB", "KPBI"],
-                        "GA": ["KATL", "KMCN", "KAHN", "KAGS", "KSAV", "KABY", "KAMG", "KCSG", "KVLD"],
-                        "HI": ["PHTO", "PHLI", "PHMO", "PHKO", "PHNL"],
-                        "IA": ["KDSM", "KOMA", "KDVN", "KSUX", "KCID", "KDBQ", "KALO", "KBRL", "KFOD", "KOTM", "KSPW"],
-                        "ID": ["KBOI", "KPIH", "KCOE", "KBYI", "KSUN", "KLWS", "KMYL", "KSMN"],
-                        "IL": ["KORD", "KDEC", "KPIA", "KRFD", "KAAA", "KBLV"],
-                        "IN": ["KIND", "KFWA", "KEVV", "KGYY", "KLAF", "KSBN"],
-                        "KS": ["KDDC", "KGLD", "KICT", "KGCK", "KHYS", "KLBL", "KMHK", "KCNU", "KTOP"],
-                        "KY": ["KLOU", "KPAH", "KBWG", "KLEX", "KJKL", "KCVG"],
-                        "LA": ["KMSY", "KLCH", "KSHV", "KBTR", "KPOE", "KMLU", "KASD"],
-                        "MA": ["KBOS", "KACK", "KORE"],
-                        "MD": ["KSBY", "KBWI", "KNHK"],
-                        "ME": ["KCAR", "KBGR", "KPWM", "KAUG", "KEPM", "KHUL"],
-                        "MI": ["KANJ", "KDTW", "KGLR", "KGRR", "KAPN", "KFNT", "KLAN", "KMKG", "KMQT"],
-                        "MN": ["KMSP", "KINL", "KDLH", "KAXN", "KBRD", "KPKD", "KRWF", "KRST", "KRRT", "KHIB", "KSTC"],
-                        "MO": ["KMCI", "KSTL", "KCOU", "KSTJ", "KSGF", "KIRK", "KPOF", "KSZL"],
-                        "MS": ["KJAN", "KGWO", "KTUP", "KNMM", "KPIB"],
-                        "MT": ["KGTF", "KGGW", "KWEY", "KHVR", "KMSO", "KBZN", "KCTB", "KHLN", "KMLS", "KBIL", "KDLN", "KGDV", "KGPI", "KLWT"],
-                        "NC": ["KILM", "KHSE", "KRDU", "KNKT", "KGSO", "KAVL", "KCLT", "KFAY", "KTNB"],
-                        "ND": ["KBIS", "KFAR", "KGFK", "KDIK", "KJMS", "KMIB", "KISN"],
-                        "NE": ["KVTN", "KLBF", "KCDR", "KGRI", "KMCK", "KONL", "KBFF", "KLNK"],
-                        "NH": ["KCON"],
-                        "NJ": ["KACY"],
-                        "NM": ["KABQ", "KCVS", "KHMN", "KROW", "KGUP", "KCNM", "KDMN", "KHOB", "KTCS", "K2C2", "KSAF", "KLVS"],
-                        "NV": ["KTPH", "KLAS", "KRNO", "KEKO", "KELY", "KWMC", "KLOL"],
-                        "NY": ["KBUF", "KLGA", "KALB", "KSYR", "KPOU", "KUCA", "KGTB", "KMSS", "KISP", "KBGM"],
-                        "OH": ["KCLE", "KILN", "KCMH", "KDAY", "KFDY"],
-                        "OK": ["KOKC", "KTUL", "KADM", "KEND", "KGAG", "KHBR", "KMLC"],
-                        "OR": ["KMFR", "KEUG", "KPDX", "KPDT", "KAST", "KBKE", "KBNO", "KLKV", "KOTH", "KRDM", "KREO", "KSLE"],
-                        "PA": ["KPIT", "KPHL", "KUNV", "KERI", "KAVP", "KBFD", "KJST", "KMDT"],
-                        "PR": ["TJSJ"],
-                        "RI": ["KPVD"],
-                        "SC": ["KCHS", "KCAE", "KGSP", "KFLO"],
-                        "SD": ["KRAP", "KFSD", "KABR", "KPIR", "KHON", "KMBG", "KATY", "K2WX"],
-                        "TN": ["KMEM", "KBNA", "KTRI", "KCHA", "KTYS", "KCSV", "KDYR"],
-                        "TX": ["KDFW", "KBRO", "KLBB", "KCRP", "KDRT", "KELP", "KIAH", "KAMA", "KAUS", "KCDS", "KLRD", "KABI", "KCLL", "KGGG", "KTYR", "KSPS", "KMAF", "KSJT", "KDHT", "KFST", "KJCT", "KLFK", "KMRF", "KPSX", "KACT", "KMWL", "KSAT"],
-                        "UT": ["KSLC", "KCDC", "KENV", "KLGU", "KVEL", "KDPG"],
-                        "VA": ["KIAD", "KROA", "KORF", "KRIC", "KCHO"],
-                        "VT": ["KBTV", "KMPV"],
-                        "WA": ["KSEA", "KGEG", "KUIL", "KDLS", "KYKM", "KHQM", "KBLI", "KEPH", "KSMP"],
-                        "WI": ["KGRB", "KMKE", "KEAU", "KMSN", "KHYR", "KLSE", "KCWA"],
-                        "WV": ["KHTS", "KEKN", "KMRB", "KBKW", "KPKB", "KMGW", "KCBE", "KCRW"],
-                        "WY": ["KSHR", "KRIW", "KCYS", "KCOD", "KBPI", "KCPR", "KGCC", "KJAC", "KRWL", "KRKS", "KWRL"]
-                    };
+    const locationInput = document.getElementById('locationInput');
+    const suggestionsList = document.getElementById('suggestionsList');
+    const getForecastButton = document.getElementById('getForecastButton');
+    const daysInput = document.getElementById('daysInput');
+    const forecastImage = document.getElementById('forecastImage');
+    const imagePlaceholderText = document.getElementById('imagePlaceholderText');
 
-                    const stateInput = document.getElementById('stateInput');
-                    const airportSelect = document.getElementById('airportSelect');
-                    const getForecastButton = document.getElementById('getForecastButton');
-                    const forecastImage = document.getElementById('forecastImage');
-                    const imagePlaceholderText = document.getElementById('imagePlaceholderText');
+    let selectedLat = null;
+    let selectedLon = null;
+    let debounceTimer;
 
-                    // --- Airport Selection Logic (Placeholder for future ESRI App integration) ---
-                    // The following state input and airport dropdown functionality is a temporary
-                    // method for selecting an airport. This section will likely be replaced or
-                    // heavily modified when integrating an ESRI Instant App for airport selection.
-                    // ---
+    // --- Autocomplete Logic (Photon API) ---
+    locationInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        clearTimeout(debounceTimer);
+        
+        // Reset selection if user types again
+        selectedLat = null; 
+        selectedLon = null;
+        getForecastButton.disabled = true;
 
-                    function populateAirportDropdown(stateAbbrev) {
-                        airportSelect.innerHTML = ''; // Clear existing options
+        if (query.length < 3) {
+            suggestionsList.style.display = 'none';
+            return;
+        }
 
-                        const airports = airportData[stateAbbrev.toUpperCase()];
-                        if (airports) {
-                            airportSelect.disabled = false;
-                            const defaultOption = document.createElement('option');
-                            defaultOption.value = "";
-                            defaultOption.textContent = "-- Select Airport --";
-                            airportSelect.appendChild(defaultOption);
-
-                            airports.forEach(function(airportCode) {
-                                const option = document.createElement('option');
-                                option.value = airportCode;
-                                option.textContent = airportCode;
-                                airportSelect.appendChild(option);
-                            });
-                        } else {
-                            const option = document.createElement('option');
-                            option.value = "";
-                            option.textContent = "-- Invalid State --";
-                            airportSelect.appendChild(option);
-                            airportSelect.disabled = true;
-                        }
-                    }
-
-                    stateInput.addEventListener('input', function() {
-                        const stateValue = this.value.trim().toUpperCase();
-                        if (stateValue.length === 2) {
-                            populateAirportDropdown(stateValue);
-                        } else {
-                            airportSelect.innerHTML = '<option value="">-- Enter 2-Letter State --</option>';
-                            airportSelect.disabled = true;
-                        }
-                        // Clear previous forecast image when state input changes
-                        forecastImage.style.display = 'none';
-                        forecastImage.src = '';
-                        imagePlaceholderText.style.display = 'block';
-                        imagePlaceholderText.textContent = 'Forecast will appear here once an airport is selected and "Get Forecast" is clicked.';
-                    });
-
-                    function displayForecast() {
-                        const selectedAirport = airportSelect.value;
-                        if (selectedAirport) {
-                            imagePlaceholderText.textContent = 'Loading forecast for ' + selectedAirport + '...';
-                            imagePlaceholderText.style.display = 'block';
-                            forecastImage.style.display = 'none';
-                            forecastImage.src = ''; 
-
-                            const forecastUrl = `http://StaviMondavi.pythonanywhere.com/plot/${selectedAirport}`;
+        debounceTimer = setTimeout(() => {
+            // Photon is a free, open-source geocoder based on OpenStreetMap
+            fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5&lang=en`)
+                .then(response => response.json())
+                .then(data => {
+                    suggestionsList.innerHTML = '';
+                    if (data.features && data.features.length > 0) {
+                        data.features.forEach(feature => {
+                            const li = document.createElement('li');
+                            const props = feature.properties;
                             
-                            const tempImg = new Image();
-                            tempImg.onload = function() {
-                                forecastImage.src = forecastUrl;
-                                forecastImage.style.display = 'block'; 
-                                imagePlaceholderText.style.display = 'none'; 
-                            };
-                            tempImg.onerror = function() {
-                                imagePlaceholderText.textContent = 'Forecast data currently unavailable for ' + selectedAirport + '. Please try another airport or check back later.';
-                                imagePlaceholderText.style.display = 'block';
-                                forecastImage.style.display = 'none';
-                            };
-                            tempImg.src = forecastUrl;
-
-                        } else {
-                            imagePlaceholderText.textContent = 'Please select an airport.';
-                            imagePlaceholderText.style.display = 'block';
-                            forecastImage.style.display = 'none';
-                            forecastImage.src = '';
-                        }
+                            // Construct a readable label
+                            let label = props.name;
+                            if (props.city && props.city !== props.name) label += `, ${props.city}`;
+                            if (props.state) label += `, ${props.state}`;
+                            if (props.country) label += `, ${props.country}`;
+                            
+                            li.textContent = label;
+                            li.addEventListener('click', () => {
+                                locationInput.value = label;
+                                selectedLat = feature.geometry.coordinates[1];
+                                selectedLon = feature.geometry.coordinates[0];
+                                suggestionsList.style.display = 'none';
+                                getForecastButton.disabled = false;
+                            });
+                            suggestionsList.appendChild(li);
+                        });
+                        suggestionsList.style.display = 'block';
+                    } else {
+                        suggestionsList.style.display = 'none';
                     }
+                })
+                .catch(err => console.error("Geocoding error:", err));
+        }, 300); // Wait 300ms after typing stops
+    });
 
-                    getForecastButton.addEventListener('click', displayForecast);
+    // Hide suggestions if clicking outside
+    document.addEventListener('click', function(e) {
+        if (e.target !== locationInput && e.target !== suggestionsList) {
+            suggestionsList.style.display = 'none';
+        }
+    });
 
-                });
+    // --- Plot Fetching Logic ---
+    getForecastButton.addEventListener('click', function() {
+        if (!selectedLat || !selectedLon) return;
+
+        const days = daysInput.value;
+        
+        // IMPORTANT: Ensure this URL matches your PythonAnywhere config
+        // New Endpoint: /stavrocast/plot
+        const baseUrl = 'http://StaviMondavi.pythonanywhere.com'; 
+        const plotUrl = `${baseUrl}/stavrocast/plot?lat=${selectedLat}&lon=${selectedLon}&days=${days}`;
+
+        imagePlaceholderText.textContent = 'Generating custom ECMWF forecast... this takes about 5-10 seconds.';
+        imagePlaceholderText.style.display = 'block';
+        forecastImage.style.display = 'none';
+        forecastImage.src = '';
+
+        const tempImg = new Image();
+        tempImg.onload = function() {
+            forecastImage.src = plotUrl;
+            forecastImage.style.display = 'block';
+            imagePlaceholderText.style.display = 'none';
+        };
+        tempImg.onerror = function() {
+            imagePlaceholderText.textContent = 'Error loading forecast. Please try again or choose a different location.';
+        };
+        // Trigger the load
+        tempImg.src = plotUrl;
+    });
+});
