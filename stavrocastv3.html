@@ -71,7 +71,7 @@
             #status-message { margin-top: 10px; font-size: 0.9rem; color: #e74c3c; font-weight: bold; text-align: center; }
             
             .dashboard { display: flex; flex-direction: column; gap: 15px; width: 100%; margin: 0 auto; }
-            .chart-container { background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); height: 400px; width: 100%; }
+            .chart-container { background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); height: 450px; width: 100%; }
             
             input[type="text"], input[type="number"] { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; width: 100%; }
             button.button { cursor: pointer; font-weight: bold; font-size: 1rem; transition: background 0.2s; }
@@ -324,13 +324,36 @@
         }
 
         // --- 4. PLOTTING FUNCTIONS ---
-        const baseLayout = {
-            margin: { l: 60, r: 20, t: 30, b: 30 },
-            xaxis: { tickformat: '%a %m/%d\n%H:%M', showgrid: true, gridcolor: 'rgba(0,0,0,0.1)' },
-            yaxis: { showgrid: true, gridcolor: 'rgba(0,0,0,0.1)' },
-            plot_bgcolor: 'white', paper_bgcolor: 'white', hovermode: 'x unified',
-            autosize: true
-        };
+        function getBaseLayout() {
+            const isMobile = window.innerWidth <= 768;
+            return {
+                margin: isMobile ? { l: 40, r: 10, t: 40, b: 120 } : { l: 60, r: 20, t: 40, b: 80 },
+                xaxis: { 
+                    tickformat: isMobile ? '%m/%d %Hh' : '%a %m/%d\n%H:%M', 
+                    tickangle: isMobile ? -45 : 0,
+                    showgrid: true, gridcolor: 'rgba(0,0,0,0.1)',
+                    tickfont: { size: isMobile ? 10 : 12 }
+                },
+                yaxis: { 
+                    showgrid: true, gridcolor: 'rgba(0,0,0,0.1)',
+                    tickfont: { size: isMobile ? 10 : 12 }
+                },
+                plot_bgcolor: 'white', paper_bgcolor: 'white', 
+                hovermode: isMobile ? 'closest' : 'x unified',
+                autosize: true,
+                legend: { orientation: 'h', y: -0.35, x: 0.5, xanchor: 'center', font: { size: isMobile ? 10 : 12 } },
+                font: { size: isMobile ? 10 : 12 }
+            };
+        }
+
+        function getPlotConfig() {
+            const isMobile = window.innerWidth <= 768;
+            // NOTE: To re-enable the modebar (tools) on mobile later, change displayModeBar to true or remove this option entirely
+            return {
+                responsive: true,
+                displayModeBar: !isMobile
+            };
+        }
 
         function plotSnow(times, snowArrays) {
             const traces = [];
@@ -343,7 +366,10 @@
                 });
             });
             traces.push({ x: times, y: meanArray, type: 'scattergl', mode: 'lines', line: { color: 'black', width: 2 }, name: 'Mean', hoverinfo: 'y' });
-            Plotly.newPlot('chart-snow', traces, { ...baseLayout, title: 'Ensemble Snowfall Depth (inches)' }, {responsive: true});
+            
+            const layout = getBaseLayout();
+            layout.title = 'Ensemble Snowfall Depth (inches)';
+            Plotly.newPlot('chart-snow', traces, layout, getPlotConfig());
         }
 
         function plotPType(times, ptypeArrays) {
@@ -356,7 +382,11 @@
             const traces = order.map(t => ({
                 x: times, y: percentages[t.key], type: 'scatter', mode: 'none', fill: 'tonexty', stackgroup: 'one', name: t.name, fillcolor: t.color, line: {color: t.color}
             }));
-            Plotly.newPlot('chart-ptype', traces, { ...baseLayout, title: 'Precipitation Type Likelihood (%)', yaxis: { range: [0, 100] } }, {responsive: true});
+            
+            const layout = getBaseLayout();
+            layout.title = 'Precipitation Type Likelihood (%)';
+            layout.yaxis.range = [0, 100];
+            Plotly.newPlot('chart-ptype', traces, layout, getPlotConfig());
         }
 
         function plotTemp(times, tempArrays) {
@@ -370,7 +400,10 @@
                 { x: times, y: mean, type: 'scatter', mode: 'lines', line: { color: 'blue', width: 2 }, name: 'Ensemble Mean' },
                 { x: times, y: new Array(times.length).fill(32), type: 'scatter', mode: 'lines', line: { color: 'red', width: 1, dash: 'dash' }, name: 'Freezing (32°F)' }
             ];
-            Plotly.newPlot('chart-temp', traces, { ...baseLayout, title: '2m Temperature (°F)' }, {responsive: true});
+            
+            const layout = getBaseLayout();
+            layout.title = '2m Temperature (°F)';
+            Plotly.newPlot('chart-temp', traces, layout, getPlotConfig());
         }
 
         function plotPrecip(times, precipArrays) {
@@ -390,8 +423,10 @@
                 hovertemplate: `Mean<br>Time: %{x|%a %m/%d %H:%M}<br>Amount: %{y:.2f} in<extra></extra>`
             });
             
-            const layout = { ...baseLayout, title: 'Total Accumulated Precipitation (inches)', hovermode: 'closest' };
-            Plotly.newPlot('chart-precip', traces, layout, {responsive: true});
+            const layout = getBaseLayout();
+            layout.title = 'Total Accumulated Precipitation (inches)';
+            layout.hovermode = 'closest';
+            Plotly.newPlot('chart-precip', traces, layout, getPlotConfig());
 
             const myPlot = document.getElementById('chart-precip');
             
@@ -424,7 +459,10 @@
                 arrowX.push(times[i]); arrowY.push(speedMean[i]); arrowAngles.push(dirMean[i] + 180); 
             }
             traces.push({ x: arrowX, y: arrowY, type: 'scatter', mode: 'markers', marker: { symbol: 'arrow-up', size: 12, angle: arrowAngles, color: 'black' }, name: 'Wind Direction (Blows Towards)', hoverinfo: 'skip' });
-            Plotly.newPlot('chart-wind', traces, { ...baseLayout, title: 'Wind Speed & Direction (mph)' }, {responsive: true});
+            
+            const layout = getBaseLayout();
+            layout.title = 'Wind Speed & Direction (mph)';
+            Plotly.newPlot('chart-wind', traces, layout, getPlotConfig());
         }
 
         // --- 5. MAIN FETCH EXECUTION ---
