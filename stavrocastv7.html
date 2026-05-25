@@ -1,0 +1,643 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Stavrocast - Weather Forecasts</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+        <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+		<style>
+			/* Styling for the expandable section */
+			details {
+				border: 1px solid #e5e5e5;
+				border-radius: 4px;
+				padding: 0.5em 1em;
+				margin-bottom: 1.5em;
+				background: #f7f7f7;
+			}
+			summary {
+				position: relative; 
+				cursor: pointer;
+				font-weight: bold;
+				outline: none;
+				list-style: none; 
+				text-align: center; 
+				padding: 0.5em 0;
+			}
+			summary::-webkit-details-marker {
+				display: none;
+			}
+			summary::before {
+				content: '►';
+				position: absolute;
+				left: 1em;
+				top: 50%;
+				transform: translateY(-50%);
+			}
+			summary::after {
+				content: '◄';
+				position: absolute;
+				right: 1em;
+				top: 50%;
+				transform: translateY(-50%);
+			}
+			details[open] summary {
+				margin-bottom: 0.75em;
+			}
+			
+			/* Override for copyright on this page to match index.html */
+			#copyright {
+				margin-top: 0;
+				padding-top: 5em;
+			}
+
+			/* Hide mobile navigation bar */
+			#titleBar {
+				display: none;
+			}
+
+            /* Custom App Styles */
+            .autocomplete-wrapper { position: relative; max-width: 350px; margin: 0 auto; }
+            #autocomplete-list {
+                position: absolute; top: 100%; left: 0; width: 100%;
+                background: white; border: 1px solid #ccc; border-top: none;
+                border-radius: 0 0 4px 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                z-index: 1000; max-height: 250px; overflow-y: auto; display: none;
+                text-align: left;
+            }
+            #autocomplete-list div { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 0.95rem; }
+            #autocomplete-list div:last-child { border-bottom: none; }
+            #autocomplete-list div:hover { background-color: #3498db; color: white; }
+            #status-message { margin-top: 10px; font-size: 0.9rem; color: #e74c3c; font-weight: bold; text-align: center; }
+            
+            .dashboard { display: flex; flex-direction: column; gap: 15px; width: 100%; margin: 0 auto; }
+            .chart-container { background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); height: 450px; width: 100%; }
+            
+            input[type="text"], input[type="number"] { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; width: 100%; }
+            button.button { cursor: pointer; font-weight: bold; font-size: 1rem; transition: background 0.2s; }
+            button.button:disabled { background-color: #95a5a6; cursor: not-allowed; opacity: 0.7; }
+		</style>
+	</head>
+	<body class="no-sidebar is-preload">
+		<div id="page-wrapper">
+
+			<section id="header" style="padding-top: 1.5em; padding-bottom: 1.5em; min-height: 0;">
+				<div class="container" style="padding-top: 1em; padding-bottom: 0em; border-bottom: none; box-shadow: none;">
+				
+					<h1 id="logo" style="margin-bottom: 0.25em;"><a href="stavrocast.html">STAVROCAST</a></h1>
+					<p style="margin-top: 0; font-size: 0.9em;">ECMWF Ensemble Forecast Uncertainty Analysis</p>
+					<nav id="nav">
+						<ul>
+						</ul>
+					</nav>
+				</div>
+			</section>
+
+			<section id="main" style="padding-top: 2em; padding-bottom: 2em;">
+				<div class="container">
+					<div id="content">
+
+						<article class="box post" style="border-top: none; box-shadow: none; margin-top:0; padding-top:0;">
+							<details>
+								<summary>What is this? Click to learn more</summary>
+								<p style="text-align: left; margin-bottom: 0;">
+									The main purpose of Stavrocast is to help users better visualize cumulative precipitation forecasts and their inherent uncertainty. The interactive map displays a 72-hour cumulative precipitation forecast for the USA. To generate a detailed forecast plot for your specific location globally, type a city name in the search box, choose your forecast duration, and click 'Fetch Forecast'. The resulting plots visualize the full range of equally probable temperature, precipitation, and wind outcomes from the latest ECMWF (European) ensemble model run.
+								</p>
+							</details>
+
+							<div class="row">
+
+								<div class="col-4 col-12-medium">
+
+									<div class="row gtr-uniform">
+										<div class="col-12 autocomplete-wrapper">
+											<label for="city-input" style="display: block; margin-bottom: 0.5em; text-align: center; font-weight: bold;">Enter City:</label>
+											<input type="text" name="city-input" id="city-input" value="" placeholder="Start typing a city..." autocomplete="off" style="max-width: 350px; margin: 0 auto; display: block;" />
+                                            <div id="autocomplete-list"></div>
+										</div>
+									</div>
+
+									<div class="row gtr-uniform">
+										<div class="col-12">
+											<label for="days-input" style="display: block; margin-bottom: 0.5em; text-align: center; font-weight: bold;">Forecast Days:</label>
+											<input type="number" name="days-input" id="days-input" min="1" max="16" value="" style="max-width: 350px; margin: 0 auto 1.5em auto; display: block;" />
+										</div>
+									</div>
+
+									<div class="row gtr-uniform">
+										<div class="col-12">
+											<ul class="actions" style="margin-top: 1em; text-align: center;">
+												<li><button id="fetch-btn" class="button" style="min-width: 200px;">Fetch Forecast</button></li>
+											</ul>
+                                            <div id="status-message"></div>
+										</div>
+									</div>
+								</div>
+
+								<div class="col-8 col-12-medium">
+									<h3 style="text-align: center; margin-bottom: 1em;">USA rain forecast map (3 day totals)</h3>
+									<div style="text-align: center;">
+                                        <img src="https://www.wpc.ncep.noaa.gov/qpf/d13_fill.gif" alt="WPC 72-Hour Precipitation Forecast" style="width: 100%; max-width: 800px; margin: 0 auto; display: block; border-radius: 8px;">
+									</div>
+								</div>
+
+							</div> 
+                            
+                            <div class="row gtr-uniform" style="margin-top: 2.5em;">
+								<div class="col-12">
+									<h3 style="text-align: center;">Forecast Plot</h3>
+									<span class="image fit" id="forecastImageContainer">
+										<p id="imagePlaceholderText" style="text-align: center; padding: 2em; border: 1px dashed #ccc;">Forecast will appear here once a city is selected and "Fetch Forecast" is clicked.</p>
+                                        <div class="dashboard" id="dashboard-container" style="display: none;">
+                                            <div id="chart-precip" class="chart-container"></div>
+                                            <div id="chart-ptype" class="chart-container"></div>
+                                            <div id="chart-intensity" class="chart-container" style="display: none;"></div>
+                                            <div id="chart-temp" class="chart-container"></div>
+                                            <div id="chart-wind" class="chart-container"></div>
+                                            <div id="chart-snow" class="chart-container"></div>
+                                        </div>
+									</span>
+								</div>
+							</div>
+
+						</article>
+
+					</div>
+				</div>
+			</section>
+
+			<div id="copyright" class="container">
+					<ul class="links">
+						<li>© Stavros Calos. All rights reserved.</li><li>HTML5 Template: <a href="http://html5up.net">HTML5 UP</a></li>
+					</ul>
+			</div>
+
+		</div>
+
+		<script src="assets/js/jquery.min.js"></script>
+		<script src="assets/js/jquery.dropotron.min.js"></script>
+		<script src="assets/js/browser.min.js"></script>
+		<script src="assets/js/breakpoints.min.js"></script>
+		<script src="assets/js/util.js"></script>
+		<script src="assets/js/main.js"></script>
+		
+        <script>
+        // --- 1. STATE VARIABLES FOR PRECISE LOCATION ---
+        // We start with null values so no forecast loads by default
+        let currentLat = null;
+        let currentLon = null;
+        let currentCityName = "";
+
+        // --- 2. AUTOCOMPLETE LOGIC ---
+        const cityInput = document.getElementById('city-input');
+        const autoList = document.getElementById('autocomplete-list');
+        let typingTimer;
+
+        // Listen for typing
+        cityInput.addEventListener('input', (e) => {
+            clearTimeout(typingTimer); // clear timer so we don't spam the API on every keystroke
+            const val = e.target.value.trim();
+            
+            if (!val) {
+                autoList.style.display = 'none';
+                return;
+            }
+
+            // Wait 300ms after the user stops typing to fetch results
+            typingTimer = setTimeout(async () => {
+                try {
+                    // Fetch top 5 results
+                    const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(val)}&count=5`);
+                    const data = await res.json();
+                    
+                    autoList.innerHTML = ''; // clear old list
+                    
+                    if (data.results && data.results.length > 0) {
+                        data.results.forEach(place => {
+                            const div = document.createElement('div');
+                            // Combine Name, State/Region, and Country (e.g., "Richmond, Virginia, United States")
+                            const fullName = [place.name, place.admin1, place.country].filter(Boolean).join(', ');
+                            div.innerHTML = fullName;
+                            
+                            // When the user clicks an option
+                            div.addEventListener('click', () => {
+                                cityInput.value = fullName;
+                                currentLat = place.latitude;
+                                currentLon = place.longitude;
+                                currentCityName = place.name;
+                                autoList.style.display = 'none';
+                            });
+                            autoList.appendChild(div);
+                        });
+                        autoList.style.display = 'block';
+                    } else {
+                        autoList.style.display = 'none';
+                    }
+                } catch (err) {
+                    console.error("Geocoding autocomplete failed", err);
+                }
+            }, 300);
+        });
+
+        // Hide dropdown if user clicks anywhere else on the page
+        document.addEventListener('click', (e) => {
+            if(e.target !== cityInput) {
+                autoList.style.display = 'none';
+            }
+        });
+
+        // --- 3. API & MATH FUNCTIONS ---
+        async function fetchEnsembleData(lat, lon, days) {
+            const vars = [
+                "temperature_2m", "dewpoint_2m", "snowfall", "precipitation_type", "precipitation",
+                "wind_speed_10m", "wind_gusts_10m", "wind_direction_10m"
+            ].join(',');
+            const url = `https://ensemble-api.open-meteo.com/v1/ensemble?latitude=${lat}&longitude=${lon}&hourly=${vars}&wind_speed_unit=mph&timezone=America/New_York&models=ecmwf_ifs025&forecast_days=${days}`;
+            const res = await fetch(url);
+            if (!res.ok) throw new Error("Failed to fetch ensemble data.");
+            return await res.json();
+        }
+
+        function extractMemberArrays(hourlyData, prefix) {
+            return Object.keys(hourlyData).filter(k => k.startsWith(prefix + '_member')).map(k => hourlyData[k]);
+        }
+
+        function calcMean(arrays) {
+            const numHours = arrays[0].length;
+            const means = new Array(numHours).fill(0);
+            for (let h = 0; h < numHours; h++) {
+                let sum = 0; let count = 0;
+                for (let m = 0; m < arrays.length; m++) {
+                    if (arrays[m][h] != null) { sum += arrays[m][h]; count++; }
+                }
+                means[h] = count > 0 ? sum / count : null;
+            }
+            return means;
+        }
+
+        function calcCumSum(array, multiplier = 1) {
+            const result = new Array(array.length);
+            let sum = 0;
+            for (let i = 0; i < array.length; i++) {
+                sum += (array[i] || 0) * multiplier;
+                result[i] = sum;
+            }
+            return result;
+        }
+
+        function calcPercentiles(arrays, percentile) {
+            const numHours = arrays[0].length;
+            const result = new Array(numHours);
+            for (let h = 0; h < numHours; h++) {
+                const validVals = arrays.map(a => a[h]).filter(v => v != null).sort((a, b) => a - b);
+                if (validVals.length === 0) { result[h] = null; continue; }
+                const index = (percentile / 100) * (validVals.length - 1);
+                const lower = Math.floor(index);
+                const upper = Math.ceil(index);
+                const weight = index - lower;
+                result[h] = upper === lower ? validVals[lower] : validVals[lower] * (1 - weight) + validVals[upper] * weight;
+            }
+            return result;
+        }
+
+        function calcPTypePercentages(arrays) {
+            const numHours = arrays[0].length;
+            const numMembers = arrays.length;
+            const res = { rain: [], ice: [], snow: [], wetSnow: [], mix: [], sleet: [] };
+            for (let h = 0; h < numHours; h++) {
+                let counts = { rain: 0, ice: 0, snow: 0, wetSnow: 0, mix: 0, sleet: 0 };
+                for (let m = 0; m < numMembers; m++) {
+                    const val = arrays[m][h];
+                    if (val === 1) counts.rain++;
+                    else if (val === 3) counts.ice++;
+                    else if (val === 5) counts.snow++;
+                    else if (val === 6) counts.wetSnow++;
+                    else if (val === 7) counts.mix++;
+                    else if (val === 8) counts.sleet++;
+                }
+                res.rain.push((counts.rain / numMembers) * 100);
+                res.ice.push((counts.ice / numMembers) * 100);
+                res.snow.push((counts.snow / numMembers) * 100);
+                res.wetSnow.push((counts.wetSnow / numMembers) * 100);
+                res.mix.push((counts.mix / numMembers) * 100);
+                res.sleet.push((counts.sleet / numMembers) * 100);
+            }
+            return res;
+        }
+
+        // --- 4. PLOTTING FUNCTIONS ---
+        function getBaseLayout() {
+            const isMobile = window.innerWidth <= 768;
+            return {
+                margin: isMobile ? { l: 40, r: 10, t: 40, b: 120 } : { l: 60, r: 20, t: 40, b: 80 },
+                xaxis: { 
+                    tickformat: isMobile ? '%m/%d %Hh' : '%a %m/%d\n%H:%M', 
+                    tickangle: isMobile ? -45 : 0,
+                    showgrid: true, gridcolor: 'rgba(0,0,0,0.1)',
+                    tickfont: { size: isMobile ? 10 : 12 },
+                    fixedrange: isMobile
+                },
+                yaxis: { 
+                    showgrid: true, gridcolor: 'rgba(0,0,0,0.1)',
+                    tickfont: { size: isMobile ? 10 : 12 },
+                    fixedrange: isMobile
+                },
+                plot_bgcolor: 'white', paper_bgcolor: 'white', 
+                hovermode: isMobile ? 'closest' : 'x unified',
+                autosize: true,
+                legend: { orientation: 'h', y: -0.35, x: 0.5, xanchor: 'center', font: { size: isMobile ? 10 : 12 } },
+                font: { size: isMobile ? 10 : 12 },
+                dragmode: isMobile ? false : 'zoom'
+            };
+        }
+
+        function getPlotConfig() {
+            const isMobile = window.innerWidth <= 768;
+            // NOTE: To re-enable the modebar (tools) on mobile later, change displayModeBar to true or remove this option entirely
+            return {
+                responsive: true,
+                displayModeBar: !isMobile
+            };
+        }
+
+        function plotSnow(times, snowArrays) {
+            const traces = [];
+            const cumsumArrays = snowArrays.map(arr => calcCumSum(arr, 0.393701));
+            const meanArray = calcMean(cumsumArrays);
+            cumsumArrays.forEach((arr, i) => {
+                traces.push({
+                    x: times, y: arr, type: 'scattergl', mode: 'lines', line: { color: 'rgba(211, 211, 211, 0.4)', width: 1 },
+                    showlegend: i === 0, name: i === 0 ? 'Ensemble Members' : '', hoverinfo: 'skip'
+                });
+            });
+            traces.push({ x: times, y: meanArray, type: 'scattergl', mode: 'lines', line: { color: 'black', width: 2 }, name: 'Mean', hoverinfo: 'y' });
+            
+            const layout = getBaseLayout();
+            layout.title = 'Ensemble Snowfall Depth (inches)';
+            Plotly.newPlot('chart-snow', traces, layout, getPlotConfig());
+        }
+
+        function plotPType(times, ptypeArrays) {
+            const percentages = calcPTypePercentages(ptypeArrays);
+            const order = [
+                { key: 'rain', name: 'Rain', color: '#2ca02c' }, { key: 'mix', name: 'Rain/Snow Mix', color: '#ff7f0e' },
+                { key: 'sleet', name: 'Sleet', color: '#d62728' }, { key: 'ice', name: 'Freezing Rain (Ice)', color: '#9400D3' },
+                { key: 'wetSnow', name: 'Wet Snow', color: '#17becf' }, { key: 'snow', name: 'Snow', color: '#1f77b4' }
+            ];
+            const traces = order.map(t => ({
+                x: times, y: percentages[t.key], type: 'scatter', mode: 'none', fill: 'tonexty', stackgroup: 'one', name: t.name, fillcolor: t.color, line: {color: t.color}
+            }));
+            
+            const layout = getBaseLayout();
+            layout.title = 'Precipitation Type Likelihood (%)';
+            layout.yaxis.range = [0, 100];
+            Plotly.newPlot('chart-ptype', traces, layout, getPlotConfig());
+        }
+
+        function hasWinterPrecip(ptypeArrays) {
+            for (let m = 0; m < ptypeArrays.length; m++) {
+                for (let h = 0; h < ptypeArrays[m].length; h++) {
+                    const val = ptypeArrays[m][h];
+                    if (val === 3 || val === 5 || val === 6 || val === 7 || val === 8) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function calcRainIntensityPercentages(arrays) {
+            const numHours = arrays[0].length;
+            const numMembers = arrays.length;
+            const res = { trace: [], light: [], moderate: [], heavy: [], veryHeavy: [] };
+            
+            for (let h = 0; h < numHours; h++) {
+                let counts = { trace: 0, light: 0, moderate: 0, heavy: 0, veryHeavy: 0 };
+                for (let m = 0; m < numMembers; m++) {
+                    let valMm = arrays[m][h] || 0;
+                    let valIn = valMm * 0.0393701;
+                    
+                    if (valIn > 0 && valIn <= 0.02) counts.trace++;
+                    else if (valIn > 0.02 && valIn <= 0.10) counts.light++;
+                    else if (valIn > 0.10 && valIn <= 0.25) counts.moderate++;
+                    else if (valIn > 0.25 && valIn <= 0.50) counts.heavy++;
+                    else if (valIn > 0.50) counts.veryHeavy++;
+                }
+                res.trace.push((counts.trace / numMembers) * 100);
+                res.light.push((counts.light / numMembers) * 100);
+                res.moderate.push((counts.moderate / numMembers) * 100);
+                res.heavy.push((counts.heavy / numMembers) * 100);
+                res.veryHeavy.push((counts.veryHeavy / numMembers) * 100);
+            }
+            return res;
+        }
+
+        function plotRainIntensity(times, precipArrays) {
+            const percentages = calcRainIntensityPercentages(precipArrays);
+            const order = [
+                { key: 'trace', name: 'Trace (< 0.02 in/hr)', color: 'lightblue' },
+                { key: 'light', name: 'Light (0.02 - 0.10 in/hr)', color: 'mediumseagreen' },
+                { key: 'moderate', name: 'Moderate (0.10 - 0.25 in/hr)', color: 'yellow' },
+                { key: 'heavy', name: 'Heavy (0.25 - 0.50 in/hr)', color: 'orange' },
+                { key: 'veryHeavy', name: 'Very Heavy (>= 0.50 in/hr)', color: 'red' }
+            ];
+            const traces = order.map(t => ({
+                x: times, y: percentages[t.key], type: 'scatter', mode: 'none', fill: 'tonexty', stackgroup: 'one', name: t.name, fillcolor: t.color, line: {color: t.color}
+            }));
+            
+            const layout = getBaseLayout();
+            layout.title = 'Rain Intensity Distribution (%)';
+            layout.yaxis.range = [0, 100];
+            Plotly.newPlot('chart-intensity', traces, layout, getPlotConfig());
+        }
+
+        function plotTemp(times, tempArrays, dewpointArrays) {
+            const tempFArrays = tempArrays.map(arr => arr.map(v => (v * 9/5) + 32));
+            const p10 = calcPercentiles(tempFArrays, 10), p25 = calcPercentiles(tempFArrays, 25), p75 = calcPercentiles(tempFArrays, 75), p90 = calcPercentiles(tempFArrays, 90), mean = calcMean(tempFArrays);
+            const traces = [
+                { x: times, y: p10, type: 'scatter', mode: 'lines', line: {width: 0}, showlegend: false, hoverinfo: 'skip' },
+                { x: times, y: p90, type: 'scatter', mode: 'lines', fill: 'tonexty', fillcolor: 'rgba(0,0,255,0.1)', line: {width: 0}, name: '10-90th Percentile' },
+                { x: times, y: p25, type: 'scatter', mode: 'lines', line: {width: 0}, showlegend: false, hoverinfo: 'skip' },
+                { x: times, y: p75, type: 'scatter', mode: 'lines', fill: 'tonexty', fillcolor: 'rgba(0,0,255,0.25)', line: {width: 0}, name: '25-75th Percentile' },
+                { x: times, y: mean, type: 'scatter', mode: 'lines', line: { color: 'blue', width: 2 }, name: 'Ensemble Mean' }
+            ];
+
+            if (dewpointArrays && dewpointArrays.length > 0) {
+                const dewFArrays = dewpointArrays.map(arr => arr.map(v => (v * 9/5) + 32));
+                const dewMean = calcMean(dewFArrays);
+                traces.push({ x: times, y: dewMean, type: 'scatter', mode: 'lines', line: { color: 'green', width: 2, dash: 'dot' }, name: 'Mean Dew Point' });
+            }
+
+            const validP10 = p10.filter(v => v != null);
+            const validP90 = p90.filter(v => v != null);
+            if (validP10.length > 0 && validP90.length > 0) {
+                const globalMin = Math.min(...validP10);
+                const globalMax = Math.max(...validP90);
+                if (globalMin <= 42 && globalMax >= 22) {
+                    traces.push({ x: times, y: new Array(times.length).fill(32), type: 'scatter', mode: 'lines', line: { color: 'red', width: 1, dash: 'dash' }, name: 'Freezing (32°F)' });
+                }
+            }
+            
+            const layout = getBaseLayout();
+            layout.title = '2m Temperature & Dew Point (°F)';
+            Plotly.newPlot('chart-temp', traces, layout, getPlotConfig());
+        }
+
+        function plotPrecip(times, precipArrays) {
+            const traces = [];
+            const cumsumArrays = precipArrays.map(arr => calcCumSum(arr, 0.0393701));
+            const meanArray = calcMean(cumsumArrays);
+            cumsumArrays.forEach((arr, i) => {
+                traces.push({
+                    x: times, y: arr, type: 'scattergl', mode: 'lines', line: { color: 'lightgray', width: 1 },
+                    showlegend: i === 0, name: i === 0 ? 'Ensemble Members' : `Member ${i+1}`,
+                    hovertemplate: `Member ${i+1}<br>Time: %{x|%a %m/%d %H:%M}<br>Amount: %{y:.2f} in<extra></extra>`
+                });
+            });
+            traces.push({ 
+                x: times, y: meanArray, type: 'scattergl', mode: 'lines', 
+                line: { color: 'black', width: 2 }, name: 'Mean',
+                hovertemplate: `Mean<br>Time: %{x|%a %m/%d %H:%M}<br>Amount: %{y:.2f} in<extra></extra>`
+            });
+            
+            const layout = getBaseLayout();
+            layout.title = 'Total Accumulated Precipitation (inches)';
+            layout.hovermode = 'closest';
+            Plotly.newPlot('chart-precip', traces, layout, getPlotConfig());
+
+            const myPlot = document.getElementById('chart-precip');
+            
+            // Add hover events to highlight the specific member line
+            myPlot.on('plotly_hover', function(data) {
+                const curveNum = data.points[0].curveNumber;
+                // Only restyle if it's an ensemble member (not the mean)
+                if (curveNum < cumsumArrays.length) {
+                    Plotly.restyle('chart-precip', { 'line.color': '#3498db', 'line.width': 3 }, [curveNum]);
+                }
+            });
+            
+            myPlot.on('plotly_unhover', function(data) {
+                const curveNum = data.points[0].curveNumber;
+                if (curveNum < cumsumArrays.length) {
+                    Plotly.restyle('chart-precip', { 'line.color': 'lightgray', 'line.width': 1 }, [curveNum]);
+                }
+            });
+        }
+
+        function plotWind(times, speedArrays, gustArrays, dirArrays) {
+            const speedMean = calcMean(speedArrays), gustMean = calcMean(gustArrays), dirMean = calcMean(dirArrays);
+            const traces = [
+                { x: times, y: speedMean, type: 'scatter', mode: 'lines', fill: 'tozeroy', fillcolor: 'rgba(135,206,235,0.4)', line: {color: 'skyblue'}, name: 'Mean Wind Speed' },
+                { x: times, y: gustMean, type: 'scatter', mode: 'lines', line: {color: 'steelblue', width: 1.5}, name: 'Mean Wind Gust' }
+            ];
+            
+            const layout = getBaseLayout();
+            layout.title = 'Wind Speed & Direction (mph)';
+            layout.annotations = [];
+
+            for (let i = 0; i < times.length; i += 4) {
+                if (dirMean[i] == null) continue;
+                layout.annotations.push({
+                    x: times[i],
+                    y: speedMean[i],
+                    xref: 'x',
+                    yref: 'y',
+                    ax: 20 * Math.sin(dirMean[i] * Math.PI / 180),
+                    ay: -20 * Math.cos(dirMean[i] * Math.PI / 180),
+                    showarrow: true,
+                    arrowhead: 3,
+                    arrowsize: 1.5,
+                    arrowwidth: 1.5,
+                    arrowcolor: 'black',
+                    text: ''
+                });
+            }
+
+            traces.push({ 
+                x: [null], y: [null], type: 'scatter', mode: 'markers', 
+                marker: { symbol: 'arrow-down', size: 10, color: 'black' }, 
+                name: 'Wind Direction (Blows Towards)' 
+            });
+            
+            Plotly.newPlot('chart-wind', traces, layout, getPlotConfig());
+        }
+
+        // --- 5. MAIN FETCH EXECUTION ---
+        document.getElementById('fetch-btn').addEventListener('click', async () => {
+            const days = document.getElementById('days-input').value;
+            const statusEl = document.getElementById('status-message');
+            const btn = document.getElementById('fetch-btn');
+
+            if (!cityInput.value) return;
+
+            try {
+                btn.disabled = true;
+                
+                // Fallback: If they typed something entirely new but never clicked a dropdown option,
+                // do a quick brute-force geocode check just to be safe.
+                if (!cityInput.value.includes(currentCityName)) {
+                    statusEl.innerText = "Searching for city...";
+                    statusEl.style.color = "blue";
+                    const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityInput.value)}&count=1`);
+                    const data = await res.json();
+                    if (!data.results || data.results.length === 0) throw new Error("City not found. Try selecting from the dropdown.");
+                    currentLat = data.results[0].latitude;
+                    currentLon = data.results[0].longitude;
+                    currentCityName = data.results[0].name;
+                }
+
+                statusEl.innerText = `Fetching ECMWF EPS data for ${currentCityName} (Lat: ${currentLat.toFixed(2)}, Lon: ${currentLon.toFixed(2)})...`;
+                statusEl.style.color = "blue";
+
+                const data = await fetchEnsembleData(currentLat, currentLon, days);
+
+                statusEl.innerText = "Processing & Rendering charts (this may take a second)...";
+
+                const times = data.hourly.time; 
+                const hourly = data.hourly;
+
+                // Render plots sequentially to keep UI somewhat responsive
+                const precipArrays = extractMemberArrays(hourly, 'precipitation');
+                const ptypeArrays = extractMemberArrays(hourly, 'precipitation_type');
+                
+                plotPrecip(times, precipArrays);
+                
+                if (hasWinterPrecip(ptypeArrays)) {
+                    document.getElementById('chart-ptype').style.display = 'block';
+                    document.getElementById('chart-snow').style.display = 'block';
+                    document.getElementById('chart-intensity').style.display = 'none';
+                    plotPType(times, ptypeArrays);
+                    plotSnow(times, extractMemberArrays(hourly, 'snowfall'));
+                } else {
+                    document.getElementById('chart-ptype').style.display = 'none';
+                    document.getElementById('chart-snow').style.display = 'none';
+                    document.getElementById('chart-intensity').style.display = 'block';
+                    plotRainIntensity(times, precipArrays);
+                }
+                
+                plotTemp(times, extractMemberArrays(hourly, 'temperature_2m'), extractMemberArrays(hourly, 'dewpoint_2m'));
+                plotWind(times, extractMemberArrays(hourly, 'wind_speed_10m'), extractMemberArrays(hourly, 'wind_gusts_10m'), extractMemberArrays(hourly, 'wind_direction_10m'));
+
+                // Hide placeholder and show dashboard
+                document.getElementById('imagePlaceholderText').style.display = 'none';
+                document.getElementById('dashboard-container').style.display = 'flex';
+
+                statusEl.innerText = `Success: Latest ECMWF forecast mapped for ${currentCityName}.`;
+                statusEl.style.color = "green";
+                
+                // Trigger a resize event to ensure Plotly fills the new responsive container perfectly
+                window.dispatchEvent(new Event('resize')); 
+
+            } catch (error) {
+                console.error(error);
+                statusEl.innerText = `Error: ${error.message}`;
+                statusEl.style.color = "red";
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+
+		</script>
+	</body>
+</html>
