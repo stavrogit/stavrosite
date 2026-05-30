@@ -73,9 +73,45 @@
             .dashboard { display: flex; flex-direction: column; gap: 15px; width: 100%; margin: 0 auto; }
             .chart-container { background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); height: 450px; width: 100%; }
             
-            input[type="text"], input[type="number"] { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; width: 100%; }
+            input[type="text"], input[type="number"], select { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; width: 100%; }
             button.button { cursor: pointer; font-weight: bold; font-size: 1rem; transition: background 0.2s; }
             button.button:disabled { background-color: #95a5a6; cursor: not-allowed; opacity: 0.7; }
+            
+            .app-layout {
+                display: flex;
+                flex-direction: column;
+                gap: 2em;
+            }
+            .app-layout-inputs { order: 1; }
+            .app-layout-graphics { order: 2; }
+            .app-layout-map { order: 3; }
+            
+            @media screen and (max-width: 900px) {
+                .modebar { display: none !important; }
+            }
+            
+            @media screen and (min-width: 769px) {
+                .app-layout {
+                    display: grid;
+                    grid-template-columns: 350px 1fr;
+                    grid-template-rows: auto auto;
+                    gap: 2em;
+                    align-items: flex-start;
+                }
+                .app-layout-inputs {
+                    grid-column: 1;
+                    grid-row: 1;
+                    width: 100%;
+                }
+                .app-layout-map {
+                    grid-column: 2;
+                    grid-row: 1;
+                }
+                .app-layout-graphics {
+                    grid-column: 1 / span 2;
+                    grid-row: 2;
+                }
+            }
 		</style>
 	</head>
 	<body class="no-sidebar is-preload">
@@ -101,70 +137,83 @@
 							<details>
 								<summary>What is this? Click to learn more</summary>
 								<p style="text-align: left; margin-bottom: 0;">
-									The main purpose of Stavrocast is to help users better visualize cumulative precipitation forecasts and their inherent uncertainty. The interactive map displays a 72-hour cumulative precipitation forecast for the USA. To generate a detailed forecast plot for your specific location globally, type a city name in the search box, choose your forecast duration, and click 'Fetch Forecast'. The resulting plots visualize the full range of equally probable temperature, precipitation, and wind outcomes from the latest ECMWF (European) ensemble model run.
+									The main purpose of Stavrocast is to help users better visualize cumulative precipitation forecasts and their inherent uncertainty. The interactive map displays a 72-hour cumulative precipitation forecast for the USA. To generate a detailed forecast plot for your specific location globally, type a city name in the search box, choose your forecast duration, and click 'Get Forecast'. The resulting plots visualize the full range of equally probable temperature, precipitation, and wind outcomes from the latest ECMWF (European) ensemble model run.
 								</p>
 							</details>
 
-							<div class="row aln-center">
-
-								<div class="col-12 col-12-medium" style="max-width: 500px; margin: 0 auto;">
-
-									<div class="row gtr-uniform">
-										<div class="col-12 autocomplete-wrapper" style="text-align: center;">
-											<label for="city-input" style="display: block; margin-bottom: 0.5em; font-weight: bold;">Enter City:</label>
-                                            <div style="display: flex; justify-content: center; gap: 10px; max-width: 350px; margin: 0 auto;">
-											    <input type="text" name="city-input" id="city-input" value="" placeholder="Start typing..." autocomplete="off" style="flex: 1;" />
-                                                <button id="locate-btn" class="button" style="padding: 0 15px; min-width: auto; height: 43px; line-height: 43px; font-size: 0.9em;">Locate Me</button>
+							<div class="app-layout">
+                                <!-- Inputs -->
+                                <div class="app-layout-inputs">
+                                    <div class="col-12" style="max-width: 600px; margin: 0 auto;">
+                                        <h3 style="text-align: center; margin-bottom: 1em; font-size: 1.25em;">Select Forecast Details</h3>
+                                        <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-between; margin-bottom: 1.5em;">
+                                            <div style="flex: 1; min-width: 250px; position: relative;" class="autocomplete-wrapper">
+                                                <label for="city-input" style="display: block; margin-bottom: 0.5em; font-weight: bold;">Enter City:</label>
+                                                <input type="text" name="city-input" id="city-input" value="" placeholder="Start typing..." autocomplete="off" style="width: 100%;" />
+                                                <div id="autocomplete-list" style="width: 100%; position: absolute; top: 100%; left: 0;"></div>
                                             </div>
-                                            <div id="autocomplete-list" style="max-width: 350px; margin: 0 auto; left: 0; right: 0;"></div>
-										</div>
-									</div>
-
-									<div class="row gtr-uniform">
-										<div class="col-12">
-											<label for="days-input" style="display: block; margin-bottom: 0.5em; text-align: center; font-weight: bold;">Forecast Days:</label>
-											<input type="number" name="days-input" id="days-input" min="1" max="16" value="5" style="max-width: 350px; margin: 0 auto 1.5em auto; display: block;" />
-										</div>
-									</div>
-
-									<div class="row gtr-uniform">
-										<div class="col-12">
-											<ul class="actions" style="margin-top: 1em; text-align: center;">
-												<li><button id="fetch-btn" class="button" style="min-width: 200px;">Fetch Forecast</button></li>
-											</ul>
-                                            <div id="status-message"></div>
-										</div>
-									</div>
-								</div>
-
-							</div> 
-                            
-                            <div class="row gtr-uniform" style="margin-top: 2.5em;">
-								<div class="col-12">
-									<h3 style="text-align: center; margin-bottom: 0;">Forecast Plot</h3>
-                                    <h4 id="plot-timezone-label" style="text-align: center; color: #888; font-size: 0.9em; margin-top: 0.5em; margin-bottom: 1em;"></h4>
-									<span class="image fit" id="forecastImageContainer">
-										<p id="imagePlaceholderText" style="text-align: center; padding: 2em; border: 1px dashed #ccc;">Forecast will appear here once a city is selected and "Fetch Forecast" is clicked.</p>
-                                        <div class="dashboard" id="dashboard-container" style="display: none;">
-                                            <div id="chart-precip" class="chart-container"></div>
-                                            <div id="chart-ptype" class="chart-container"></div>
-                                            <div id="chart-intensity" class="chart-container" style="display: none;"></div>
-                                            <div id="chart-temp" class="chart-container"></div>
-                                            <div id="chart-wind" class="chart-container"></div>
-                                            <div id="chart-snow" class="chart-container"></div>
+                                            <div style="flex: 1; min-width: 200px;">
+                                                <label for="days-input" style="display: block; margin-bottom: 0.5em; font-weight: bold;">Forecast Days:</label>
+                                                <select name="days-input" id="days-input" style="width: 100%;">
+                                                    <option value="1">1 day</option>
+                                                    <option value="2">2 days</option>
+                                                    <option value="3">3 days</option>
+                                                    <option value="4">4 days</option>
+                                                    <option value="5" selected>5 days</option>
+                                                    <option value="6">6 days</option>
+                                                    <option value="7">7 days</option>
+                                                    <option value="8">8 days</option>
+                                                    <option value="9">9 days</option>
+                                                    <option value="10">10 days</option>
+                                                    <option value="11">11 days</option>
+                                                    <option value="12">12 days</option>
+                                                    <option value="13">13 days</option>
+                                                    <option value="14">14 days</option>
+                                                    <option value="15">15 days</option>
+                                                </select>
+                                            </div>
                                         </div>
-									</span>
-								</div>
-							</div>
+                                        <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                                            <button id="fetch-current-btn" class="button" style="width: 100%; max-width: 350px;">Get Forecast (Current Location)</button>
+                                            <button id="fetch-city-btn" class="button" style="width: 100%; max-width: 350px;">Get Forecast (Selected city)</button>
+                                            <div id="status-message" style="margin-top: 10px; text-align: center;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Graphics -->
+                                <div class="app-layout-graphics">
+                                    <div class="row gtr-uniform">
+                                        <div class="col-12">
+                                            <h3 id="forecast-plot-title" style="text-align: center; margin-bottom: 0;">FORECAST PLOT</h3>
+                                            <h4 id="plot-timezone-label" style="text-align: center; color: #888; font-size: 0.9em; margin-top: 0.5em; margin-bottom: 1em;"></h4>
+                                            <span class="image fit" id="forecastImageContainer">
+                                                <p id="imagePlaceholderText" style="text-align: center; padding: 2em; border: 1px dashed #ccc;">Forecast will appear here once a city is selected and "Get Forecast" is clicked.</p>
+                                                <div class="dashboard" id="dashboard-container" style="display: none;">
+                                                    <div id="chart-precip" class="chart-container"></div>
+                                                    <div id="chart-ptype" class="chart-container"></div>
+                                                    <div id="chart-intensity" class="chart-container" style="display: none;"></div>
+                                                    <div id="chart-temp" class="chart-container"></div>
+                                                    <div id="chart-wind" class="chart-container"></div>
+                                                    <div id="chart-snow" class="chart-container"></div>
+                                                </div>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
 
-                            <div class="row" style="margin-top: 4em;">
-                                <div class="col-12">
-									<h3 style="text-align: center; margin-bottom: 0;">Forecast Map</h3>
-                                    <h4 id="map-timezone-label" style="text-align: center; color: #888; font-size: 0.9em; margin-top: 0.5em; margin-bottom: 1em;"></h4>
-									<div style="text-align: center;"> 
-                                        <iframe id="windy-iframe" width="100%" height="600" src="https://embed.windy.com/embed2.html?lat=39.828&lon=-98.579&zoom=4&level=surface&overlay=rainAccu&product=ecmwf&menu=&message=true&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=mph&metricTemp=%C2%B0F&metricRain=in" frameborder="0"></iframe>
-									</div>
-								</div>
+                                <!-- Map -->
+                                <div class="app-layout-map">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <h3 style="text-align: center; margin-bottom: 0;">Forecast Map</h3>
+                                            <h4 id="map-timezone-label" style="text-align: center; color: #888; font-size: 0.9em; margin-top: 0.5em; margin-bottom: 1em;"></h4>
+                                            <div style="text-align: center;"> 
+                                                <iframe id="windy-iframe" width="100%" height="600" src="https://embed.windy.com/embed2.html?lat=39.828&lon=-98.579&zoom=4&level=surface&overlay=rainAccu&product=ecmwf&menu=&message=true&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=mph&metricTemp=%C2%B0F&metricRain=in" frameborder="0"></iframe>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
 						</article>
@@ -197,7 +246,7 @@
         let currentTimezone = "auto";
 
         // --- 2. AUTOCOMPLETE LOGIC ---
-        document.getElementById('locate-btn').addEventListener('click', () => {
+        document.getElementById('fetch-current-btn').addEventListener('click', () => {
             const statusEl = document.getElementById('status-message');
             if (!navigator.geolocation) {
                 statusEl.innerText = "Geolocation is not supported by your browser.";
@@ -215,12 +264,12 @@
                 currentLon = lon;
                 currentCityName = "Current Location";
                 currentTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                document.getElementById('days-input').value = 5;
-                document.getElementById('fetch-btn').click();
-            }, () => {
-                statusEl.innerText = "Unable to retrieve your location.";
+                document.getElementById('fetch-city-btn').click();
+            }, (error) => {
+                statusEl.innerText = "Unable to retrieve your location (Timeout or Permission Denied).";
                 statusEl.style.color = "red";
-            });
+                console.error(error);
+            }, { timeout: 3000 });
         });
 
         const cityInput = document.getElementById('city-input');
@@ -363,7 +412,7 @@
 
         // --- 4. PLOTTING FUNCTIONS ---
         function getBaseLayout(times) {
-            const isMobile = window.innerWidth <= 768;
+            const isMobile = window.innerWidth <= 900;
             
             const shapes = [];
             if (times && times.length > 0) {
@@ -398,8 +447,9 @@
             return {
                 margin: isMobile ? { l: 40, r: 10, t: 40, b: 120 } : { l: 60, r: 20, t: 40, b: 80 },
                 xaxis: { 
-                    tickformat: isMobile ? '%m/%d %Hh' : '%a %m/%d\n%H:%M', 
-                    tickangle: isMobile ? -45 : 0,
+                    tickformat: '%a %m/%d\n%H:00', 
+                    tickangle: 0,
+                    nticks: isMobile ? 4 : 10,
                     showgrid: true, gridcolor: 'rgba(0,0,0,0.05)',
                     tickfont: { size: isMobile ? 10 : 12 },
                     fixedrange: isMobile,
@@ -426,7 +476,7 @@
         }
 
         function getPlotConfig() {
-            const isMobile = window.innerWidth <= 768;
+            const isMobile = window.innerWidth <= 900;
             // NOTE: To re-enable the modebar (tools) on mobile later, change displayModeBar to true or remove this option entirely
             return {
                 responsive: true,
@@ -444,10 +494,10 @@
                     showlegend: i === 0, name: i === 0 ? 'Ensemble Members' : '', hoverinfo: 'skip'
                 });
             });
-            traces.push({ x: times, y: meanArray, type: 'scattergl', mode: 'lines', line: { color: 'black', width: 2 }, name: 'Mean', hovertemplate: '%{x|%A, %b %d - %H:%M}<extra></extra>' });
+            traces.push({ x: times, y: meanArray, type: 'scattergl', mode: 'lines', line: { color: 'black', width: 2 }, name: 'Mean', hovertemplate: '%{y:.2f} in<extra></extra>' });
             
             const layout = getBaseLayout(times);
-            layout.title = 'Ensemble Snowfall Depth (inches)';
+            layout.title = { text: 'Ensemble Snowfall Depth (inches)', font: { size: window.innerWidth <= 900 ? 11 : 16 } };
             Plotly.newPlot('chart-snow', traces, layout, getPlotConfig());
         }
 
@@ -458,13 +508,23 @@
                 { key: 'sleet', name: 'Sleet', color: '#d62728' }, { key: 'ice', name: 'Freezing Rain (Ice)', color: '#9400D3' },
                 { key: 'wetSnow', name: 'Wet Snow', color: '#17becf' }, { key: 'snow', name: 'Snow', color: '#1f77b4' }
             ];
+            
+            const totalChance = new Array(times.length).fill(0);
+            for(let h=0; h<times.length; h++) {
+                totalChance[h] = order.reduce((sum, t) => sum + percentages[t.key][h], 0);
+            }
+
             const traces = order.map((t, i) => ({
                 x: times, y: percentages[t.key], type: 'scatter', mode: 'none', fill: 'tonexty', stackgroup: 'one', name: t.name, fillcolor: t.color, line: {color: t.color},
-                hoverinfo: 'skip', hovertemplate: i === 0 ? '%{x|%A, %b %d - %H:%M}<extra></extra>' : undefined
+                hoverinfo: 'skip'
             }));
             
+            traces.push({
+                x: times, y: totalChance, type: 'scatter', mode: 'lines', line: {width: 0}, hoverinfo: 'all', hovertemplate: 'Total Chance: %{y:.1f}%<extra></extra>', showlegend: false
+            });
+            
             const layout = getBaseLayout(times);
-            layout.title = 'Precipitation Type Likelihood (%)';
+            layout.title = { text: 'Precipitation Type Likelihood (%)', font: { size: window.innerWidth <= 900 ? 11 : 16 } };
             layout.yaxis.range = [0, 100];
             Plotly.newPlot('chart-ptype', traces, layout, getPlotConfig());
         }
@@ -516,13 +576,23 @@
                 { key: 'heavy', name: 'Heavy (0.25 - 0.50 in/hr)', color: 'orange' },
                 { key: 'veryHeavy', name: 'Very Heavy (>= 0.50 in/hr)', color: 'red' }
             ];
+            
+            const totalChance = new Array(times.length).fill(0);
+            for(let h=0; h<times.length; h++) {
+                totalChance[h] = order.reduce((sum, t) => sum + percentages[t.key][h], 0);
+            }
+
             const traces = order.map((t, i) => ({
                 x: times, y: percentages[t.key], type: 'scatter', mode: 'none', fill: 'tonexty', stackgroup: 'one', name: t.name, fillcolor: t.color, line: {color: t.color},
-                hoverinfo: i === 0 ? 'all' : 'skip', hovertemplate: i === 0 ? '%{x|%A, %b %d - %H:%M}<extra></extra>' : undefined
+                hoverinfo: 'skip'
             }));
             
+            traces.push({
+                x: times, y: totalChance, type: 'scatter', mode: 'lines', line: {width: 0}, hoverinfo: 'all', hovertemplate: 'Total Chance: %{y:.1f}%<extra></extra>', showlegend: false
+            });
+            
             const layout = getBaseLayout(times);
-            layout.title = 'Rain Intensity Distribution (%)';
+            layout.title = { text: 'Rain Intensity Distribution (%)', font: { size: window.innerWidth <= 900 ? 11 : 16 } };
             layout.yaxis.range = [0, 100];
             Plotly.newPlot('chart-intensity', traces, layout, getPlotConfig());
         }
@@ -535,7 +605,7 @@
                 { x: times, y: p90, type: 'scatter', mode: 'lines', fill: 'tonexty', fillcolor: 'rgba(0,0,255,0.1)', line: {width: 0}, name: '10-90th Percentile', hoverinfo: 'skip' },
                 { x: times, y: p25, type: 'scatter', mode: 'lines', line: {width: 0}, showlegend: false, hoverinfo: 'skip' },
                 { x: times, y: p75, type: 'scatter', mode: 'lines', fill: 'tonexty', fillcolor: 'rgba(0,0,255,0.25)', line: {width: 0}, name: '25-75th Percentile', hoverinfo: 'skip' },
-                { x: times, y: mean, type: 'scatter', mode: 'lines', line: { color: 'blue', width: 2 }, name: 'Ensemble Mean', hovertemplate: '%{x|%A, %b %d - %H:%M}<extra></extra>' }
+                { x: times, y: mean, type: 'scatter', mode: 'lines', line: { color: 'blue', width: 2 }, name: 'Ensemble Mean', hovertemplate: '%{y:.1f}°F<extra></extra>' }
             ];
 
             if (dewpointArrays && dewpointArrays.length > 0) {
@@ -555,7 +625,7 @@
             }
             
             const layout = getBaseLayout(times);
-            layout.title = '2m Temperature & Dew Point (°F)';
+            layout.title = { text: '2m Temperature & Dew Point (°F)', font: { size: window.innerWidth <= 900 ? 11 : 16 } };
             Plotly.newPlot('chart-temp', traces, layout, getPlotConfig());
         }
 
@@ -573,11 +643,11 @@
             traces.push({ 
                 x: times, y: meanArray, type: 'scattergl', mode: 'lines', 
                 line: { color: 'black', width: 2 }, name: 'Mean',
-                hovertemplate: '%{x|%A, %b %d - %H:%M}<extra></extra>'
+                hovertemplate: '%{y:.2f} in<extra></extra>'
             });
             
             const layout = getBaseLayout(times);
-            layout.title = 'Total Accumulated Precipitation (inches)';
+            layout.title = { text: 'Total Accumulated Precipitation (inches)', font: { size: window.innerWidth <= 900 ? 11 : 16 } };
             layout.hovermode = 'x'; // unified with spikeline
             Plotly.newPlot('chart-precip', traces, layout, getPlotConfig());
 
@@ -603,15 +673,18 @@
         function plotWind(times, speedArrays, gustArrays, dirArrays) {
             const speedMean = calcMean(speedArrays), gustMean = calcMean(gustArrays), dirMean = calcMean(dirArrays);
             const traces = [
-                { x: times, y: speedMean, type: 'scatter', mode: 'lines', fill: 'tozeroy', fillcolor: 'rgba(135,206,235,0.4)', line: {color: 'skyblue'}, name: 'Mean Wind Speed', hovertemplate: '%{x|%A, %b %d - %H:%M}<extra></extra>' },
+                { x: times, y: speedMean, type: 'scatter', mode: 'lines', fill: 'tozeroy', fillcolor: 'rgba(135,206,235,0.4)', line: {color: 'skyblue'}, name: 'Mean Wind Speed', hovertemplate: '%{y:.1f} mph<extra></extra>' },
                 { x: times, y: gustMean, type: 'scatter', mode: 'lines', line: {color: 'steelblue', width: 1.5}, name: 'Mean Wind Gust', hoverinfo: 'skip' }
             ];
             
             const layout = getBaseLayout(times);
-            layout.title = 'Wind Speed & Direction (mph)';
+            layout.title = { text: 'Wind Speed & Direction (mph)', font: { size: window.innerWidth <= 900 ? 11 : 16 } };
             layout.annotations = [];
 
-            for (let i = 0; i < times.length; i += 4) {
+            const isMobile = window.innerWidth <= 900;
+            let step = isMobile ? Math.max(4, Math.ceil(times.length / 15)) : Math.max(4, Math.ceil(times.length / 30));
+
+            for (let i = 0; i < times.length; i += step) {
                 if (dirMean[i] == null) continue;
                 layout.annotations.push({
                     x: times[i],
@@ -640,10 +713,10 @@
         }
 
         // --- 5. MAIN FETCH EXECUTION ---
-        document.getElementById('fetch-btn').addEventListener('click', async () => {
+        document.getElementById('fetch-city-btn').addEventListener('click', async () => {
             const days = document.getElementById('days-input').value;
             const statusEl = document.getElementById('status-message');
-            const btn = document.getElementById('fetch-btn');
+            const btn = document.getElementById('fetch-city-btn');
 
             if (!cityInput.value) return;
 
@@ -671,9 +744,11 @@
                 
                 const tz = data.timezone || currentTimezone;
                 const tzAbbr = data.timezone_abbreviation || '';
-                const tzLabel = `Timezone: ${tz} ${tzAbbr ? '('+tzAbbr+')' : ''}`;
+                const tzLabel = `TIMEZONE: ${(tz).toUpperCase()} ${tzAbbr ? '('+tzAbbr+')' : ''}`;
                 document.getElementById('plot-timezone-label').innerText = tzLabel;
                 document.getElementById('map-timezone-label').innerText = tzLabel;
+                
+                document.getElementById('forecast-plot-title').innerText = `FORECAST PLOT AT ${currentLat.toFixed(2)}, ${currentLon.toFixed(2)}`;
 
                 statusEl.innerText = "Processing & Rendering charts (this may take a second)...";
 
