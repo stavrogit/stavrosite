@@ -121,7 +121,7 @@
 				<div class="container" style="padding-top: 1em; padding-bottom: 0em; border-bottom: none; box-shadow: none;">
 				
 					<h1 id="logo" style="margin-bottom: 0.25em;"><a href="stavrocast.html">STAVROCAST</a></h1>
-					<p style="margin-top: 0; font-size: 0.9em;">ECMWF Ensemble Forecast Uncertainty Analysis</p>
+					<p style="margin-top: 0; font-size: 0.9em;">Unpacking Uncertainty in Weather Forecasts</p>
 					<nav id="nav">
 						<ul>
 						</ul>
@@ -137,7 +137,12 @@
 							<details>
 								<summary>What is this? Click to learn more</summary>
 								<p style="text-align: left; margin-bottom: 0;">
-									The main purpose of Stavrocast is to help users better visualize cumulative precipitation forecasts and their inherent uncertainty. The interactive map displays a 72-hour cumulative precipitation forecast for the USA. To generate a detailed forecast plot for your specific location globally, type a city name in the search box, choose your forecast duration, and click 'Get Forecast'. The resulting plots visualize the full range of equally probable temperature, precipitation, and wind outcomes from the latest ECMWF (European) ensemble model run.
+									All forecasts are wrong; Stavrocast is useful. Its only function is to display and compare equally probable weather forecasts from the world’s most trusted medium range ensemble forecast, the European Centre for Medium-Range Weather Forecast (ECMWF-ENS).
+									I use Stavrocast for planning outdoor recreation and construction activities, and I built it because it portrays uncertainty more clearly than existing popular forecast tools. For example, popular forecasts often contain statements like “80% chance of 0.6” of rain on Tuesday.” But… what does this even mean?? Is it going to drizzle all day or will it be a passing storm? Or do we not know? What's the likelihood of 0” of rain? Alternatively, what's the likelihood of a severe washout? Stavrocast aims to answer these questions in an intuitive graphical form. 
+									Forecasts are available for any location on earth, and they update every day at noon and midnight GMT. 
+									Simply put - when the “ensemble members” agree, we can feel relatively confident in their collective forecast. And when they diverge, we can't. 
+									Like all models, the ECMWF-ENS forecasts shown here warrant endless caveats. Of most relevance to Stavrocast - the ECMWF-ENS is a coarse, global model that essentially averages forecasts over ~9km grid cells. The result?  In times/places of variability, highs may be higher and lows lower than predicted by Stavrocast. This is especially true when you see ensemble members diverging, for spatially discrete storms like summertime thunder storms, and in areas of highly variable terrain. Yet it remains useful. 
+									Many thanks to Open-Meteo for making this data available via their API. <a href="https://open-meteo.com/" target="_blank">open-meteo.com</a>
 								</p>
 							</details>
 
@@ -146,6 +151,9 @@
                                 <div class="app-layout-inputs">
                                     <div class="col-12" style="max-width: 600px; margin: 0 auto;">
                                         <h3 style="text-align: center; margin-bottom: 1em; font-size: 1.25em;">Select Forecast Details</h3>
+                                        <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; margin-bottom: 1.5em;">
+                                            <button id="fetch-current-btn" class="button" style="width: 100%; max-width: 350px;">Get Forecast (Current Location)</button>
+                                        </div>
                                         <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-between; margin-bottom: 1.5em;">
                                             <div style="flex: 1; min-width: 250px; position: relative;" class="autocomplete-wrapper">
                                                 <label for="city-input" style="display: block; margin-bottom: 0.5em; font-weight: bold;">Enter City:</label>
@@ -174,7 +182,6 @@
                                             </div>
                                         </div>
                                         <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
-                                            <button id="fetch-current-btn" class="button" style="width: 100%; max-width: 350px;">Get Forecast (Current Location)</button>
                                             <button id="fetch-city-btn" class="button" style="width: 100%; max-width: 350px;">Get Forecast (Selected city)</button>
                                             <div id="status-message" style="margin-top: 10px; text-align: center;"></div>
                                         </div>
@@ -281,7 +288,8 @@
             clearTimeout(typingTimer); // clear timer so we don't spam the API on every keystroke
             const val = e.target.value.trim();
             
-            if (!val) {
+            // Goal: Reduce API call usage by only auto displaying results once user types in 6 characters.
+            if (val.length < 6) {
                 autoList.style.display = 'none';
                 return;
             }
@@ -327,6 +335,13 @@
         document.addEventListener('click', (e) => {
             if(e.target !== cityInput) {
                 autoList.style.display = 'none';
+            }
+        });
+
+        // Clear "Current Location" when the user focuses the input
+        cityInput.addEventListener('focus', () => {
+            if (cityInput.value === "Current Location") {
+                cityInput.value = "";
             }
         });
 
@@ -422,7 +437,7 @@
                     if (hours === 0 || hours === 12) {
                         shapes.push({
                             type: 'line', x0: t, x1: t, y0: 0, y1: 1, yref: 'paper',
-                            line: { color: 'rgba(0,0,0,0.15)', width: hours === 0 ? 3 : 1.5, dash: 'solid' },
+                            line: { color: 'rgba(0,0,0,0.15)', width: hours === 0 ? 1 : 0.5, dash: 'solid' },
                             layer: 'below'
                         });
                     }
@@ -490,7 +505,7 @@
             const meanArray = calcMean(cumsumArrays);
             cumsumArrays.forEach((arr, i) => {
                 traces.push({
-                    x: times, y: arr, type: 'scattergl', mode: 'lines', line: { color: 'rgba(211, 211, 211, 0.4)', width: 1 },
+                    x: times, y: arr, type: 'scattergl', mode: 'lines', line: { color: 'rgba(150, 150, 150, 0.6)', width: 1 },
                     showlegend: i === 0, name: i === 0 ? 'Ensemble Members' : '', hoverinfo: 'skip'
                 });
             });
@@ -592,7 +607,7 @@
             });
             
             const layout = getBaseLayout(times);
-            layout.title = { text: 'Rain Intensity Distribution (%)', font: { size: window.innerWidth <= 900 ? 11 : 16 } };
+            layout.title = { text: 'Precipitation Type Likelihood', font: { size: window.innerWidth <= 900 ? 11 : 16 } };
             layout.yaxis.range = [0, 100];
             Plotly.newPlot('chart-intensity', traces, layout, getPlotConfig());
         }
@@ -635,7 +650,7 @@
             const meanArray = calcMean(cumsumArrays);
             cumsumArrays.forEach((arr, i) => {
                 traces.push({
-                    x: times, y: arr, type: 'scattergl', mode: 'lines', line: { color: 'lightgray', width: 1 },
+                    x: times, y: arr, type: 'scattergl', mode: 'lines', line: { color: 'rgba(150, 150, 150, 0.8)', width: 1 },
                     showlegend: i === 0, name: i === 0 ? 'Ensemble Members' : `Member ${i+1}`,
                     hoverinfo: 'skip'
                 });
@@ -665,7 +680,7 @@
             myPlot.on('plotly_unhover', function(data) {
                 const curveNum = data.points[0].curveNumber;
                 if (curveNum < cumsumArrays.length) {
-                    Plotly.restyle('chart-precip', { 'line.color': 'lightgray', 'line.width': 1 }, [curveNum]);
+                    Plotly.restyle('chart-precip', { 'line.color': 'rgba(150, 150, 150, 0.8)', 'line.width': 1 }, [curveNum]);
                 }
             });
         }
