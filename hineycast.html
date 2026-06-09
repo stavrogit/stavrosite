@@ -131,6 +131,7 @@
                                     </div>
                                 </div>
                                 
+
                                 <!-- Graphics -->
                                 <div class="app-layout-graphics">
                                     <div class="col-12">
@@ -450,10 +451,22 @@
                 const endOfWeek = new Date(today);
                 endOfWeek.setDate(today.getDate() + (6 - today.getDay())); // Saturday
                 
+                const endOfWeekStr = endOfWeek.toISOString().split('T')[0];
+                let maxY = 0;
+                for (let i = 0; i < dates.length; i++) {
+                    if (dates[i] >= `${currentYear}-01-01` && dates[i] <= endOfWeekStr) {
+                        if (normalCumSum[i] > maxY) maxY = normalCumSum[i];
+                        if (ytdCumSum[i] && ytdCumSum[i] > maxY) maxY = ytdCumSum[i];
+                    }
+                }
+                if (maxY === 0) maxY = 10;
+                
+                const isMobile = window.innerWidth <= 900;
+                
                 const layout = {
                     plot_bgcolor: 'white',
                     paper_bgcolor: 'white',
-                    margin: { l: 70, r: 20, t: 30, b: 50 },
+                    margin: isMobile ? { l: 50, r: 10, t: 30, b: 50 } : { l: 70, r: 20, t: 30, b: 50 },
                     xaxis: {
                         tickformat: '%b %Y',
                         hoverformat: '%b %d, %Y',
@@ -464,7 +477,8 @@
                         spikedash: 'solid',
                         spikecolor: '#999',
                         spikethickness: 1,
-                        range: [`${currentYear}-01-01`, endOfWeek.toISOString().split('T')[0]]
+                        range: [`${currentYear}-01-01`, endOfWeekStr],
+                        fixedrange: isMobile
                     },
                     yaxis: {
                         title: { text: 'Accumulation (inches)', standoff: 20 },
@@ -472,7 +486,9 @@
                         gridcolor: 'rgba(0,0,0,0.1)',
                         zeroline: true,
                         zerolinecolor: 'rgba(0,0,0,0.2)',
-                        rangemode: 'tozero'
+                        rangemode: 'tozero',
+                        range: [0, maxY * 1.1],
+                        fixedrange: isMobile
                     },
                     hovermode: 'x unified',
                     legend: {
@@ -481,12 +497,36 @@
                         x: 0.5,
                         xanchor: 'center'
                     },
-                    dragmode: 'pan'
+                    dragmode: isMobile ? false : 'pan'
                 };
                 
-                const config = { responsive: true, displayModeBar: true };
+                const config = { responsive: true, displayModeBar: !isMobile };
                 
                 Plotly.newPlot('chart-precip', [traceObserved, traceNormal], layout, config);
+                
+                const myPlot = document.getElementById('chart-precip');
+                myPlot.on('plotly_relayout', function(eventdata) {
+                    let x0, x1;
+                    if (eventdata['xaxis.range[0]']) {
+                        x0 = eventdata['xaxis.range[0]'];
+                        x1 = eventdata['xaxis.range[1]'];
+                    } else if (eventdata['xaxis.range']) {
+                        x0 = eventdata['xaxis.range'][0];
+                        x1 = eventdata['xaxis.range'][1];
+                    }
+                    if (x0 && x1) {
+                        let dynamicMaxY = 0;
+                        for (let i = 0; i < dates.length; i++) {
+                            if (dates[i] >= x0 && dates[i] <= x1) {
+                                if (normalCumSum[i] > dynamicMaxY) dynamicMaxY = normalCumSum[i];
+                                if (ytdCumSum[i] && ytdCumSum[i] > dynamicMaxY) dynamicMaxY = ytdCumSum[i];
+                            }
+                        }
+                        if (dynamicMaxY > 0) {
+                            Plotly.relayout(myPlot, {'yaxis.range': [0, dynamicMaxY * 1.1]});
+                        }
+                    }
+                });
                 
                 statusEl.innerText = "Data loaded successfully.";
                 statusEl.style.color = "green";
