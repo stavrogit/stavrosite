@@ -1,0 +1,506 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Hineycast - Precipitation Accumulation</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+        <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+		<style>
+            /* Custom App Styles */
+            .autocomplete-wrapper { position: relative; max-width: 350px; margin: 0 auto; }
+            #autocomplete-list {
+                position: absolute; top: 100%; left: 0; width: 100%;
+                background: white; border: 1px solid #ccc; border-top: none;
+                border-radius: 0 0 4px 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                z-index: 1000; max-height: 250px; overflow-y: auto; display: none;
+                text-align: left;
+            }
+            #autocomplete-list div { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 0.95rem; }
+            #autocomplete-list div:last-child { border-bottom: none; }
+            #autocomplete-list div:hover { background-color: #3498db; color: white; }
+            #status-message { margin-top: 10px; font-size: 0.9rem; color: #e74c3c; font-weight: bold; text-align: center; }
+            
+            .chart-container { background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); height: 500px; width: 100%; }
+            
+            input[type="text"] { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; width: 100%; }
+            button.button { cursor: pointer; font-weight: bold; font-size: 1rem; transition: background 0.2s; }
+            button.button:disabled { background-color: #95a5a6; cursor: not-allowed; opacity: 0.7; }
+            
+            .app-layout { display: flex; flex-direction: column; gap: 2em; }
+            
+            /* Styling for the expandable section */
+            details {
+                border: 1px solid #e5e5e5;
+                border-radius: 4px;
+                padding: 0.5em 1em;
+                margin-bottom: 1.5em;
+                background: #f7f7f7;
+            }
+            summary {
+                position: relative; 
+                cursor: pointer;
+                font-weight: bold;
+                outline: none;
+                list-style: none; 
+                text-align: center; 
+                padding: 0.5em 0;
+            }
+            summary::-webkit-details-marker {
+                display: none;
+            }
+            summary::before {
+                content: '►';
+                position: absolute;
+                left: 1em;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+            summary::after {
+                content: '◄';
+                position: absolute;
+                right: 1em;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+            details[open] summary {
+                margin-bottom: 0.75em;
+            }
+
+            @media screen and (max-width: 900px) {
+                .modebar { display: none !important; }
+            }
+            
+            @media screen and (min-width: 769px) {
+                .app-layout {
+                    display: grid;
+                    grid-template-columns: 350px 1fr;
+                    grid-template-rows: auto auto;
+                    gap: 2em;
+                    align-items: flex-start;
+                }
+                .app-layout-inputs { grid-column: 1; grid-row: 1; width: 100%; }
+                .app-layout-graphics { grid-column: 2; grid-row: 1; width: 100%; }
+            }
+		</style>
+	</head>
+	<body class="no-sidebar is-preload">
+		<div id="page-wrapper">
+
+			<section id="header" style="padding-top: 1.5em; padding-bottom: 1.5em; min-height: 0;">
+				<div class="container" style="padding-top: 1em; padding-bottom: 0em; border-bottom: none; box-shadow: none;">
+					<h1 id="logo" style="margin-bottom: 0.25em;"><a href="hineycast.html">HINEYCAST</a></h1>
+					<p style="margin-top: 0; font-size: 0.9em;">Precipitation Accumulation Tracker</p>
+					<nav id="nav">
+						<ul>
+						</ul>
+					</nav>
+				</div>
+			</section>
+
+			<section id="main" style="padding-top: 2em; padding-bottom: 2em;">
+				<div class="container">
+					<div id="content">
+						<article class="box post" style="border-top: none; box-shadow: none; margin-top:0; padding-top:0;">
+                            <details>
+                                <summary>What is this? Click to learn more</summary>
+                                <p style="text-align: left; margin-bottom: 0;">
+                                    Hineycast is a tool for comparing the current year's precipitation accumulation against historical norms. It pulls high-quality spatial climate data from the PRISM Climate Group to compute a 30-year daily pseudo-normal (1991-2020) and plots it against the observed precipitation accumulation for the current year. <br><br>
+                                    Whether you are a farmer, gardener, or just curious about the climate, Hineycast helps you easily visualize whether your location is experiencing a surplus or deficit of precipitation compared to what is historically expected. <br><br>
+                                    Please note that PRISM data covers only the contiguous United States and is typically updated with provisional data daily, though data for the most recent days may occasionally experience short delays.
+                                </p>
+                            </details>
+							<div class="app-layout">
+                                <!-- Inputs -->
+                                <div class="app-layout-inputs">
+                                    <div class="col-12" style="max-width: 600px; margin: 0 auto; width: 100%;">
+                                        <h3 style="text-align: center; margin-bottom: 1em; font-size: 1.25em;">Select Location</h3>
+                                        <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; margin-bottom: 1.5em;">
+                                            <button id="fetch-current-btn" class="button" style="width: 100%; max-width: 350px;">Get Data (Current Location)</button>
+                                        </div>
+                                        <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; margin-bottom: 1.5em;">
+                                            <div style="width: 100%; max-width: 350px; position: relative;" class="autocomplete-wrapper">
+                                                <input type="text" name="city-input" id="city-input" value="" placeholder="Or search for a city..." autocomplete="off" style="width: 100%;" />
+                                                <div id="autocomplete-list" style="width: 100%; position: absolute; top: 100%; left: 0;"></div>
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                                            <button id="fetch-city-btn" class="button" style="width: 100%; max-width: 350px;">Get Data (Selected city)</button>
+                                            <div id="status-message" style="margin-top: 10px; text-align: center;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Graphics -->
+                                <div class="app-layout-graphics">
+                                    <div class="col-12">
+                                        <h3 id="forecast-plot-title" style="text-align: center; margin-bottom: 0;">ACCUMULATED PRECIPITATION</h3>
+                                        <h4 id="plot-subtitle" style="text-align: center; color: #888; font-size: 0.9em; margin-top: 0.5em; margin-bottom: 1em;"></h4>
+                                        <span class="image fit" id="forecastImageContainer">
+                                            <p id="imagePlaceholderText" style="text-align: center; padding: 2em; border: 1px dashed #ccc;">Graph will appear here once a city is selected.</p>
+                                            <div id="chart-precip" class="chart-container" style="display: none;"></div>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+						</article>
+					</div>
+				</div>
+			</section>
+
+			<div id="copyright" class="container">
+					<ul class="links">
+						<li>© Stavros Calos. All rights reserved.</li><li>HTML5 Template: <a href="http://html5up.net">HTML5 UP</a></li>
+					</ul>
+			</div>
+
+		</div>
+
+		<script src="assets/js/jquery.min.js"></script>
+		<script src="assets/js/jquery.dropotron.min.js"></script>
+		<script src="assets/js/browser.min.js"></script>
+		<script src="assets/js/breakpoints.min.js"></script>
+		<script src="assets/js/util.js"></script>
+		<script src="assets/js/main.js"></script>
+		
+        <script>
+        // --- 1. STATE VARIABLES FOR PRECISE LOCATION ---
+        let currentLat = null;
+        let currentLon = null;
+        let currentCityName = "";
+
+        // --- 2. AUTOCOMPLETE LOGIC ---
+        document.getElementById('fetch-current-btn').addEventListener('click', () => {
+            const statusEl = document.getElementById('status-message');
+            if (!navigator.geolocation) {
+                statusEl.innerText = "Geolocation is not supported by your browser.";
+                statusEl.style.color = "red";
+                return;
+            }
+            statusEl.innerText = "Locating...";
+            statusEl.style.color = "blue";
+            
+            const handleFallback = async (errorMsg) => {
+                try {
+                    statusEl.innerText = errorMsg + " Trying IP-based fallback...";
+                    const res = await fetch('https://ipapi.co/json/');
+                    if (!res.ok) throw new Error("IP API failed");
+                    const data = await res.json();
+                    if (!data.latitude || !data.longitude) throw new Error("Invalid IP data");
+                    
+                    document.getElementById('city-input').value = data.city || "Current Location";
+                    currentLat = parseFloat(data.latitude);
+                    currentLon = parseFloat(data.longitude);
+                    currentCityName = data.city || "Current Location";
+                    document.getElementById('fetch-city-btn').click();
+                } catch (err) {
+                    console.error("IP fallback failed:", err);
+                    statusEl.innerText = "Unable to retrieve your location. Please try searching by city.";
+                    statusEl.style.color = "red";
+                }
+            };
+
+            navigator.geolocation.getCurrentPosition((position) => {
+                currentLat = position.coords.latitude;
+                currentLon = position.coords.longitude;
+                document.getElementById('city-input').value = "Current Location";
+                currentCityName = "Current Location";
+                document.getElementById('fetch-city-btn').click();
+            }, (error) => {
+                let msg = "Location error.";
+                handleFallback(msg);
+            }, { timeout: 10000 });
+        });
+
+        const cityInput = document.getElementById('city-input');
+        const autoList = document.getElementById('autocomplete-list');
+        let typingTimer;
+
+        cityInput.addEventListener('input', (e) => {
+            clearTimeout(typingTimer);
+            const val = e.target.value.trim();
+            if (val.length < 3) {
+                autoList.style.display = 'none';
+                return;
+            }
+
+            typingTimer = setTimeout(async () => {
+                try {
+                    const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(val)}&count=5`);
+                    const data = await res.json();
+                    autoList.innerHTML = '';
+                    if (data.results && data.results.length > 0) {
+                        data.results.forEach(place => {
+                            const div = document.createElement('div');
+                            const fullName = [place.name, place.admin1, place.country].filter(Boolean).join(', ');
+                            div.innerHTML = fullName;
+                            div.addEventListener('click', () => {
+                                cityInput.value = fullName;
+                                currentLat = place.latitude;
+                                currentLon = place.longitude;
+                                currentCityName = place.name;
+                                autoList.style.display = 'none';
+                            });
+                            autoList.appendChild(div);
+                        });
+                        autoList.style.display = 'block';
+                    } else {
+                        autoList.style.display = 'none';
+                    }
+                } catch (err) {
+                    console.error("Geocoding failed", err);
+                }
+            }, 300);
+        });
+
+        document.addEventListener('click', (e) => {
+            if(e.target !== cityInput) {
+                autoList.style.display = 'none';
+            }
+        });
+
+        cityInput.addEventListener('focus', () => {
+            if (cityInput.value === "Current Location") cityInput.value = "";
+        });
+
+        // --- 3. ACIS API LOGIC ---
+        function getDayOfYear(date) {
+            const start = new Date(date.getFullYear(), 0, 0);
+            const diff = date - start;
+            const oneDay = 1000 * 60 * 60 * 24;
+            return Math.floor(diff / oneDay);
+        }
+
+        async function fetchACISData(lat, lon, sdate, edate) {
+            const payload = {
+                loc: `${lon},${lat}`,
+                grid: "prism",
+                sdate: sdate,
+                edate: edate,
+                elems: [{"name": "pcpn"}]
+            };
+            
+            const res = await fetch('https://grid2.rcc-acis.org/GridData', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            if (!res.ok) throw new Error("Network response was not ok from ACIS API");
+            const data = await res.json();
+            
+            if (data.error) {
+                throw new Error("ACIS API Error: " + data.error);
+            }
+            if (!data.data || data.data.length === 0) {
+                throw new Error("No PRISM data returned. The location might be outside the covered area (CONUS).");
+            }
+            
+            return data.data;
+        }
+
+        // --- 4. DATA PROCESSING ---
+        function processNormals(data30Yr) {
+            // Group by day of year (1-366)
+            const dailySums = new Array(367).fill(0);
+            const dailyCounts = new Array(367).fill(0);
+            
+            data30Yr.forEach(row => {
+                // row: ["YYYY-MM-DD", "value"]
+                const d = new Date(row[0] + "T00:00:00");
+                let val = row[1];
+                if (val === "T") val = 0.001;
+                else if (val === "M" || val === "S") return;
+                
+                val = parseFloat(val);
+                if (!isNaN(val)) {
+                    let doy = getDayOfYear(d);
+                    dailySums[doy] += val;
+                    dailyCounts[doy]++;
+                }
+            });
+            
+            const dailyMeans = new Array(367).fill(0);
+            for (let i = 1; i <= 366; i++) {
+                if (dailyCounts[i] > 0) {
+                    dailyMeans[i] = dailySums[i] / dailyCounts[i];
+                }
+            }
+            
+            return dailyMeans;
+        }
+
+        // --- 5. MAIN FETCH EXECUTION ---
+        document.getElementById('fetch-city-btn').addEventListener('click', async () => {
+            const statusEl = document.getElementById('status-message');
+            const btn = document.getElementById('fetch-city-btn');
+
+            if (!cityInput.value) return;
+            
+            if (!currentLat || !currentLon) {
+                statusEl.innerText = "Searching for city...";
+                statusEl.style.color = "blue";
+                try {
+                    const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityInput.value)}&count=1`);
+                    const data = await res.json();
+                    if (!data.results || data.results.length === 0) throw new Error("City not found.");
+                    currentLat = data.results[0].latitude;
+                    currentLon = data.results[0].longitude;
+                    currentCityName = data.results[0].name;
+                } catch (e) {
+                    statusEl.innerText = e.message;
+                    statusEl.style.color = "red";
+                    return;
+                }
+            }
+
+            try {
+                btn.disabled = true;
+                statusEl.innerText = `Fetching PRISM data for ${currentCityName}... (This may take a few seconds)`;
+                statusEl.style.color = "blue";
+                
+                document.getElementById('plot-subtitle').innerText = `Location: ${currentCityName} (${currentLat.toFixed(2)}, ${currentLon.toFixed(2)})`;
+                
+                const currentYear = new Date().getFullYear();
+                
+                const normalsData = await fetchACISData(currentLat, currentLon, "1991-01-01", "2020-12-31");
+                const dailyMeans = processNormals(normalsData);
+                
+                // For PRISM, today's data might not be available yet. Fetch up to today.
+                let edate = new Date().toISOString().split('T')[0];
+                const ytdDataRaw = await fetchACISData(currentLat, currentLon, `${currentYear}-01-01`, edate);
+                
+                statusEl.innerText = "Processing Data...";
+
+                const dates = [];
+                const normalCumSum = [];
+                const ytdCumSum = [];
+                
+                let normSum = 0;
+                let isLeapYear = (currentYear % 4 === 0 && currentYear % 100 !== 0) || (currentYear % 400 === 0);
+                const daysInYear = isLeapYear ? 366 : 365;
+
+                for (let i = 1; i <= daysInYear; i++) {
+                    let d = new Date(currentYear, 0, i);
+                    // Add 12 hours so the date doesn't get messed up by timezone when splitting
+                    d.setHours(12);
+                    dates.push(d.toISOString().split('T')[0]);
+                    
+                    let doy = getDayOfYear(d);
+                    if (doy > 366) doy = 366; 
+                    normSum += dailyMeans[doy] || 0;
+                    normalCumSum.push(normSum);
+                }
+
+                let ySum = 0;
+                const ytdMap = {};
+                ytdDataRaw.forEach(row => {
+                    let d = row[0];
+                    let val = row[1];
+                    if (val === "T") val = 0.001;
+                    if (val === "M" || val === "S") return;
+                    val = parseFloat(val);
+                    if (!isNaN(val) && val >= 0) { // Check for -999 missing values
+                        ySum += val;
+                        ytdMap[d] = ySum;
+                    }
+                });
+                
+                for (let i = 0; i < dates.length; i++) {
+                    const dtStr = dates[i];
+                    if (ytdMap.hasOwnProperty(dtStr)) {
+                        ytdCumSum.push(ytdMap[dtStr]);
+                    } else {
+                        const dateObj = new Date(dtStr + "T00:00:00");
+                        if (dateObj > new Date()) {
+                            ytdCumSum.push(null);
+                        } else {
+                            ytdCumSum.push(ySum);
+                        }
+                    }
+                }
+
+                document.getElementById('imagePlaceholderText').style.display = 'none';
+                document.getElementById('chart-precip').style.display = 'block';
+                
+                const traceNormal = {
+                    x: dates,
+                    y: normalCumSum,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Normal Accumulation',
+                    line: { color: '#555', width: 2, dash: 'dash' },
+                    hovertemplate: '%{y:.1f} in<extra></extra>'
+                };
+                
+                const traceObserved = {
+                    x: dates,
+                    y: ytdCumSum,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Observed Accumulation',
+                    line: { color: '#1f77b4', width: 2 },
+                    fill: 'tozeroy',
+                    fillcolor: 'rgba(31, 119, 180, 0.2)',
+                    hovertemplate: '%{y:.1f} in<extra></extra>'
+                };
+                
+                // Calculate end of current week
+                const today = new Date();
+                const endOfWeek = new Date(today);
+                endOfWeek.setDate(today.getDate() + (6 - today.getDay())); // Saturday
+                
+                const layout = {
+                    plot_bgcolor: 'white',
+                    paper_bgcolor: 'white',
+                    margin: { l: 70, r: 20, t: 30, b: 50 },
+                    xaxis: {
+                        tickformat: '%b %Y',
+                        hoverformat: '%b %d, %Y',
+                        showgrid: true,
+                        gridcolor: 'rgba(0,0,0,0.05)',
+                        showspikes: true,
+                        spikemode: 'across',
+                        spikedash: 'solid',
+                        spikecolor: '#999',
+                        spikethickness: 1,
+                        range: [`${currentYear}-01-01`, endOfWeek.toISOString().split('T')[0]]
+                    },
+                    yaxis: {
+                        title: { text: 'Accumulation (inches)', standoff: 20 },
+                        showgrid: true,
+                        gridcolor: 'rgba(0,0,0,0.1)',
+                        zeroline: true,
+                        zerolinecolor: 'rgba(0,0,0,0.2)',
+                        rangemode: 'tozero'
+                    },
+                    hovermode: 'x unified',
+                    legend: {
+                        orientation: 'h',
+                        y: 1.05,
+                        x: 0.5,
+                        xanchor: 'center'
+                    },
+                    dragmode: 'pan'
+                };
+                
+                const config = { responsive: true, displayModeBar: true };
+                
+                Plotly.newPlot('chart-precip', [traceObserved, traceNormal], layout, config);
+                
+                statusEl.innerText = "Data loaded successfully.";
+                statusEl.style.color = "green";
+                setTimeout(() => { statusEl.innerText = ""; }, 3000);
+                
+            } catch (error) {
+                console.error(error);
+                statusEl.innerText = error.message;
+                statusEl.style.color = "red";
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        </script>
+	</body>
+</html>
