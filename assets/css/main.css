@@ -2340,9 +2340,11 @@ input, select, textarea {
 
 /* Medium */
 
+	/* 
 	#navPanel, #titleBar {
 		display: none;
-	}
+	} 
+	*/
 
 	@media screen and (max-width: 980px) {
 
@@ -2357,6 +2359,10 @@ input, select, textarea {
 			#header > .container {
 				padding: 10em 0 7em 0;
 			}
+	}
+
+	/* Apply Nav globally */
+	@media screen and (min-width: 0px) {
 
 		/* Nav */
 
@@ -2542,6 +2548,9 @@ input, select, textarea {
 				transform: translateX(0);
 			}
 
+	}
+
+	@media screen and (max-width: 980px) {
 		/* Sidebar */
 
 			#sidebar {
