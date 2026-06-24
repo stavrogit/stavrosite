@@ -27,7 +27,14 @@
             button.button { cursor: pointer; font-weight: bold; font-size: 1rem; transition: background 0.2s; }
             button.button:disabled { background-color: #95a5a6; cursor: not-allowed; opacity: 0.7; }
             
-            .app-layout { display: flex; flex-direction: column; gap: 2em; }
+            .app-layout {
+                display: flex;
+                flex-direction: column;
+                gap: 2em;
+            }
+            .app-layout-inputs { order: 1; }
+            .app-layout-graphics { order: 2; }
+            .app-layout-map { order: 3; }
             
             /* Styling for the expandable section */
             details {
@@ -79,8 +86,19 @@
                     gap: 2em;
                     align-items: flex-start;
                 }
-                .app-layout-inputs { grid-column: 1; grid-row: 1; width: 100%; }
-                .app-layout-graphics { grid-column: 2; grid-row: 1; width: 100%; }
+                .app-layout-inputs {
+                    grid-column: 1;
+                    grid-row: 1;
+                    width: 100%;
+                }
+                .app-layout-map {
+                    grid-column: 2;
+                    grid-row: 1;
+                }
+                .app-layout-graphics {
+                    grid-column: 1 / span 2;
+                    grid-row: 2;
+                }
             }
 		</style>
 	</head>
@@ -104,11 +122,17 @@
 						<article class="box post" style="border-top: none; box-shadow: none; margin-top:0; padding-top:0;">
                             <details>
                                 <summary>What is this? Click to learn more</summary>
-                                <p style="text-align: left; margin-bottom: 0;">
-                                    Hineycast is a tool for comparing the current year's precipitation accumulation against historical norms. It pulls high-quality spatial climate data from the PRISM Climate Group to compute a 30-year daily pseudo-normal (1991-2020) and plots it against the observed precipitation accumulation for the current year. <br><br>
-                                    Whether you are a farmer, gardener, or just curious about the climate, Hineycast helps you easily visualize whether your location is experiencing a surplus or deficit of precipitation compared to what is historically expected. <br><br>
-                                    Please note that PRISM data covers only the contiguous United States and is typically updated with provisional data daily, though data for the most recent days may occasionally experience short delays.
-                                </p>
+                                <div style="text-align: left; margin-bottom: 0;">
+                                    The purpose of Hineycast is to quickly visualize how much rain has fallen. Search for your location to see how much rain has fallen over the year compared to historical norms, or use the map to see the best available estimate of rainfall in recent days. <br><br>
+                                    
+                                    Hineycast relies on two primary data sources:
+                                    <ul style="margin-top: 0.5em; margin-bottom: 1em; padding-left: 2em; list-style-type: disc;">
+                                        <li>The accumulation chart pulls high-quality spatial climate data from the <a href="https://prism.oregonstate.edu/" target="_blank">PRISM Climate Group</a> (accessed via the ACIS API) to compute a 30-year daily pseudo-normal (1991-2020) and plot it against the current year's observed accumulation.</li>
+                                        <li>The interactive map embeds radar and rain gauge estimates directly from the <a href="https://www.weather.gov/" target="_blank">National Weather Service (NWS)</a> to help visualize granular, recent precipitation patterns across the region.</li>
+                                    </ul>
+                                    
+                                    The data shown here warrant endless caveats as well. PRISM data is interpolated from a sparse network of physical monitoring stations across a ~4km grid. The result is that highly localized downpours (or dry spells) might be smoothed out or missed entirely if they happen between weather stations. Additionally, PRISM data covers only the contiguous United States, and data for the most recent days is provisional and subject to delays and modification.
+                                </div>
                             </details>
 							<div class="app-layout">
                                 <!-- Inputs -->
@@ -141,6 +165,19 @@
                                             <p id="imagePlaceholderText" style="text-align: center; padding: 2em; border: 1px dashed #ccc;">Graph will appear here once a city is selected.</p>
                                             <div id="chart-precip" class="chart-container" style="display: none;"></div>
                                         </span>
+                                    </div>
+                                </div>
+
+                                <!-- Map -->
+                                <div class="app-layout-map">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <h3 style="text-align: center; margin-bottom: 0;">Rainfall Monitoring Map</h3>
+                                            <h4 style="text-align: center; color: #888; font-size: 0.9em; margin-top: 0.5em; margin-bottom: 1em;">National Weather Service</h4>
+                                            <div style="text-align: center;"> 
+                                                <iframe id="rainfall-iframe" width="100%" height="600" src="https://www.weather.gov/wrh/hazards/?&zoom=7&scroll_zoom=false&center=37.6577228,-76.71753&boundaries=true,false,false,false,false,false,false,false,false&tab=observation&obs=true&obs_type=precip&precip_interval=72&precip_filter=0.01,18&obs_popup=false&obs_density=3&obs_provider=ALL&mrms=true&mrms_type=24&mrms_opacity=40" frameborder="0"></iframe>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
