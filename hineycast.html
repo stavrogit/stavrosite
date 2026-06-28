@@ -74,6 +74,49 @@
                 margin-bottom: 0.75em;
             }
 
+            .custom-tooltip {
+                text-decoration: underline dotted;
+                cursor: pointer;
+                position: relative;
+                display: inline-block;
+            }
+            .custom-tooltip .custom-tooltip-text {
+                visibility: hidden;
+                background-color: #333;
+                color: #fff;
+                text-align: left;
+                border-radius: 4px;
+                padding: 8px 12px;
+                position: absolute;
+                z-index: 1000;
+                bottom: 125%;
+                left: 50%;
+                transform: translateX(-50%);
+                opacity: 0;
+                transition: opacity 0.3s;
+                font-size: 0.85rem;
+                width: 250px;
+                line-height: 1.4;
+                font-weight: normal;
+                letter-spacing: normal;
+                text-transform: none;
+            }
+            .custom-tooltip .custom-tooltip-text::after {
+                content: "";
+                position: absolute;
+                top: 100%;
+                left: 50%;
+                margin-left: -5px;
+                border-width: 5px;
+                border-style: solid;
+                border-color: #333 transparent transparent transparent;
+            }
+            .custom-tooltip:hover .custom-tooltip-text,
+            .custom-tooltip:active .custom-tooltip-text {
+                visibility: visible;
+                opacity: 1;
+            }
+
             @media screen and (max-width: 900px) {
                 .modebar { display: none !important; }
             }
@@ -129,7 +172,7 @@
                                     Hineycast relies on two primary data sources:
                                     <ul style="margin-top: 0.5em; margin-bottom: 1em; padding-left: 2em; list-style-type: disc;">
                                         <li>The accumulation chart pulls high-quality spatial climate data from the <a href="https://prism.oregonstate.edu/" target="_blank">PRISM Climate Group</a> (accessed via the ACIS API) to compute a 30-year daily pseudo-normal (1991-2020) and plot it against the current year's observed accumulation.</li>
-                                        <li>The interactive map embeds radar and rain gauge estimates directly from the <a href="https://www.weather.gov/" target="_blank">National Weather Service (NWS)</a> to help visualize granular, recent precipitation patterns across the region.</li>
+                                        <li>The interactive map embeds radar and rain gauge estimates directly from the <a href="https://www.weather.gov/akq/rainfall-monitoring" target="_blank">National Weather Service (NWS)</a> to help visualize granular, recent precipitation patterns across the region.</li>
                                     </ul>
                                     
                                     The data shown here warrant endless caveats as well. PRISM data is interpolated from a sparse network of physical monitoring stations across a ~4km grid. The result is that highly localized downpours (or dry spells) might be smoothed out or missed entirely if they happen between weather stations. Additionally, PRISM data covers only the contiguous United States, and data for the most recent days is provisional and subject to delays and modification.
@@ -174,7 +217,12 @@
                                     <div class="row">
                                         <div class="col-12">
                                             <h3 style="text-align: center; margin-bottom: 0;">Rainfall Monitoring Map</h3>
-                                            <h4 style="text-align: center; color: #888; font-size: 0.9em; margin-top: 0.5em; margin-bottom: 1em;">National Weather Service</h4>
+                                            <h4 style="text-align: center; color: #888; font-size: 0.9em; margin-top: 0.5em; margin-bottom: 1em;">
+                                                <span class="custom-tooltip">
+                                                    Defaults to Previous 3 Day Totals
+                                                    <span class="custom-tooltip-text">For more layers and legend, view "overlays". Overlays can be accessed via the top left hamburger menu in the graph.</span>
+                                                </span>
+                                            </h4>
                                             <div style="text-align: center;"> 
                                                 <iframe id="rainfall-iframe" width="100%" height="600" src="https://www.weather.gov/wrh/hazards/?&zoom=7&scroll_zoom=false&center=37.6577228,-76.71753&boundaries=false,false,false,false,false,false,false,false,false&obs=false&obs_type=precip&precip_interval=72&precip_filter=0.01,18&obs_popup=false&obs_density=3&obs_provider=ALL&mrms=true&mrms_type=72&mrms_opacity=40&hazard=false&menu=false&hide_menu=true&panel=false&overlays_popup=false" frameborder="0"></iframe>
                                             </div>
@@ -566,6 +614,12 @@
                     }
                 });
                 
+                // Update map iframe to center on the new location
+                const mapIframe = document.getElementById('rainfall-iframe');
+                if (mapIframe && currentLat && currentLon) {
+                    mapIframe.src = mapIframe.src.replace(/center=[^&]+/, `center=${currentLat},${currentLon}`);
+                }
+
                 statusEl.innerText = "Data loaded successfully.";
                 statusEl.style.color = "green";
                 setTimeout(() => { statusEl.innerText = ""; }, 3000);
